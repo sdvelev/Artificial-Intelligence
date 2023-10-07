@@ -19,7 +19,6 @@ public class FrogLeapPuzzle {
     private static void fulfillStates(Character[] initialState, Character[] goalState, int numberOfFrogs) {
         int totalNumberOfRocks = 2 * numberOfFrogs + 1;
         for (int i = 0; i < totalNumberOfRocks; i++) {
-
             if (i < numberOfFrogs) {
                 initialState[i] = GREATER_THAN_SYMBOL;
             } else if (i == numberOfFrogs) {
@@ -86,6 +85,7 @@ public class FrogLeapPuzzle {
             if ((indexOfEmptyRock >= 2) &&
                 (initialState[indexOfEmptyRock - 2] == GREATER_THAN_SYMBOL) &&
                 (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock - 2, indexOfEmptyRock)), visitedStates))){
+                stack.push(initialState.clone());
                 swapPositions(initialState, indexOfEmptyRock - 2, indexOfEmptyRock);
                 stack.push(initialState.clone());
                 visitedStates.add(initialState.clone());
@@ -95,6 +95,7 @@ public class FrogLeapPuzzle {
             if ((indexOfEmptyRock >= 1) &&
                 (initialState[indexOfEmptyRock - 1] == GREATER_THAN_SYMBOL) &&
                 (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock - 1, indexOfEmptyRock)), visitedStates))){
+                stack.push(initialState.clone());
                 swapPositions(initialState, indexOfEmptyRock - 1, indexOfEmptyRock);
                 stack.push(initialState.clone());
                 visitedStates.add(initialState.clone());
@@ -104,6 +105,7 @@ public class FrogLeapPuzzle {
             if ((indexOfEmptyRock < initialState.length - 1) &&
                 (initialState[indexOfEmptyRock + 1] == LESS_THAN_SYMBOL) &&
                 (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock + 1, indexOfEmptyRock)), visitedStates))){
+                stack.push(initialState.clone());
                 swapPositions(initialState, indexOfEmptyRock + 1, indexOfEmptyRock);
                 stack.push(initialState.clone());
                 visitedStates.add(initialState.clone());
@@ -113,6 +115,7 @@ public class FrogLeapPuzzle {
             if ((indexOfEmptyRock < initialState.length - 2) &&
                 (initialState[indexOfEmptyRock + 2] == LESS_THAN_SYMBOL) &&
                 (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock + 2, indexOfEmptyRock)), visitedStates))){
+                stack.push(initialState.clone());
                 swapPositions(initialState, indexOfEmptyRock + 2, indexOfEmptyRock);
                 stack.push(initialState.clone());
                 visitedStates.add(initialState.clone());
@@ -129,23 +132,17 @@ public class FrogLeapPuzzle {
         }
 
         // Output
-        for (Character character : initialState) {
-            if ((int) character == LESS_THAN_ASCII_CODE) {
-                System.out.print((char) GREATER_THAN_ASCII_CODE);
-            } else if ((int) character == GREATER_THAN_ASCII_CODE) {
-                System.out.print((char) LESS_THAN_ASCII_CODE);
-            } else {
-                System.out.print(character);
-            }
-        }
-        System.out.println();
-
+        Character[] previousState = new Character[totalNumberOfRocks];
         while (!resultStack.isEmpty()) {
             Character[] currentState = resultStack.poll();
+            if (Arrays.equals(currentState, previousState)) {
+                continue;
+            }
             for (Character character : currentState) {
                 System.out.print(character);
             }
             System.out.println();
+            System.arraycopy(currentState, 0, previousState, 0, totalNumberOfRocks);
         }
     }
 }
