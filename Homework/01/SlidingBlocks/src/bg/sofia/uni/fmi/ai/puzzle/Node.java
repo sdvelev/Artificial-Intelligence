@@ -1,6 +1,8 @@
 package bg.sofia.uni.fmi.ai.puzzle;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,14 @@ public class Node {
         this.g = g;
         this.manhattanDistance =this.getTotalManhattanDistance();
         this.direction = direction;
+    }
+
+    public Board getCurrentBoard() {
+        return currentBoard;
+    }
+
+    public Node getParent() {
+        return parent;
     }
 
     private int getTotalManhattanDistance() {
@@ -45,9 +55,20 @@ public class Node {
 
         int goalRow = numberOfTile / this.currentBoard.size();
         int goalCol = numberOfTile % this.currentBoard.size();
-        int distance = Math.abs(row - goalRow) + Math.abs(col - goalCol);
 
-        return distance;
+        return Math.abs(row - goalRow) + Math.abs(col - goalCol);
+    }
+
+    public int f() {
+        return this.g + this.manhattanDistance;
+    }
+
+    public int getG() {
+        return g;
+    }
+
+    public String getDirection() {
+        return direction;
     }
 
     public List<Node> neighbours() {
@@ -60,18 +81,19 @@ public class Node {
             Board currentBoard = currentEntry.getValue();
 
             Node node = new Node(this, currentBoard, this.goalBoard, this.g + 1, direction);
+            neighbours.add(node);
         }
 
         return neighbours;
     }
 
-    public List<Node> getPathToRoot() {
-        List<Node> path = new ArrayList<>();
+    public Deque<Node> getPathToRoot() {
+        Deque<Node> path = new ArrayDeque<>();
         Node node = this;
         path.add(node);
 
         while (node.parent != null) {
-            path.add(0, node.parent);
+            path.add(node.parent);
             node = node.parent;
         }
 

@@ -41,6 +41,10 @@ public class Board {
         return this.zeroPosition;
     }
 
+    public int[][] getTiles() {
+        return tiles;
+    }
+
     public Pair getZeroPosition() {
         Pair zeroPosition = new Pair();
 
@@ -86,9 +90,9 @@ public class Board {
         int newZeroColPosition = currentZeroColPosition + directionCoordinates.getCol();
 
         if (this.isZeroPositionValid(newZeroRowPosition, newZeroColPosition)) {
-            Board neighborBoard = this.constructNeighbourBoard(currentZeroRowPosition, currentZeroColPosition,
+            Board neighbourBoard = this.constructNeighbourBoard(currentZeroRowPosition, currentZeroColPosition,
                 newZeroRowPosition, newZeroColPosition);
-            neighbours.put(direction, neighborBoard);
+            neighbours.put(direction, neighbourBoard);
         }
     }
 
@@ -110,5 +114,15 @@ public class Board {
 
     private boolean isZeroPositionValid(int row, int col) {
         return row >= 0 && row < this.size() && col >= 0 && col < this.size();
+    }
+
+    public boolean isEqual(Board board) {
+        for (int row = 0; row < this.size(); row++) {
+            for (int col = 0; col < this.size(); col++) {
+                if (this.tileAt(row, col) != board.tileAt(row, col)) return false;
+            }
+        }
+
+        return true;
     }
 }
