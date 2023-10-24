@@ -7,60 +7,32 @@ import java.util.List;
 import java.util.Map;
 
 public class Node {
+    private final Node parentNode;
+    private final Board currentBoard;
+    private final Board goalBoard;
+    private final String direction;
+    private final int g;
+    private final int manhattanDistance;
 
-    private Node parent;
-    private Board currentBoard;
-    private Board goalBoard;
-    private int g;
-    private int manhattanDistance;
-    private String direction;
-
-    public Node(Node parent, Board currentBoard, Board goalBoard, int g, String direction) {
-        this.parent = parent;
+    public Node(Node parentNode, Board currentBoard, Board goalBoard, String direction, int g) {
+        this.parentNode = parentNode;
         this.currentBoard = currentBoard;
         this.goalBoard = goalBoard;
+        this.direction = direction;
         this.g = g;
         this.manhattanDistance =this.getTotalManhattanDistance();
-        this.direction = direction;
     }
 
     public Board getCurrentBoard() {
         return currentBoard;
     }
 
-    public Node getParent() {
-        return parent;
-    }
-
-    private int getTotalManhattanDistance() {
-        int totalManhattanDistance = 0;
-
-        for (int row = 0; row < this.currentBoard.size(); row++) {
-            for (int col = 0; col < this.currentBoard.size(); col++) {
-                totalManhattanDistance += this.getManhattanDistance(this.currentBoard.tileAt(row, col), row, col);
-            }
-        }
-        return totalManhattanDistance;
-    }
-
-    private int getManhattanDistance(int numberOfTile, int row, int col) {
-        if (numberOfTile == 0) {
-            return 0;
-        }
-        numberOfTile -= 1;
-
-        if (this.goalBoard.getZero() != -1 && numberOfTile >= this.goalBoard.getZero()) {
-            numberOfTile += 1;
-        }
-
-        int goalRow = numberOfTile / this.currentBoard.size();
-        int goalCol = numberOfTile % this.currentBoard.size();
-
-        return Math.abs(row - goalRow) + Math.abs(col - goalCol);
+    public Node getParentNode() {
+        return parentNode;
     }
 
     public int f() {
-        return this.g + this.manhattanDistance;
+        return g + manhattanDistance;
     }
 
     public int getG() {
@@ -71,32 +43,63 @@ public class Node {
         return direction;
     }
 
-    public List<Node> neighbours() {
-        List<Node> neighbours = new ArrayList<>();
+    private int getTotalManhattanDistance() {
+        int totalManhattanDistance = 0;
 
-        Map<String, Board> neighbourBoards = this.currentBoard.neighbours();
-
-        for (Map.Entry<String, Board> currentEntry: neighbourBoards.entrySet()) {
-            String direction = currentEntry.getKey();
-            Board currentBoard = currentEntry.getValue();
-
-            Node node = new Node(this, currentBoard, this.goalBoard, this.g + 1, direction);
-            neighbours.add(node);
+        for (int row = 0; row < currentBoard.getSize(); row++) {
+            for (int col = 0; col < currentBoard.getSize(); col++) {
+                totalManhattanDistance += getManhattanDistance(currentBoard.getTileAt(row, col), row, col);
+            }
         }
-
-        return neighbours;
+        return totalManhattanDistance;
     }
 
-    public Deque<Node> getPathToRoot() {
-        Deque<Node> path = new ArrayDeque<>();
-        Node node = this;
-        path.add(node);
-
-        while (node.parent != null) {
-            path.add(node.parent);
-            node = node.parent;
+    private int getManhattanDistance(int numberOfTile, int row, int col) {
+        // 0 (empty tile) does not have a manhattan distance
+        if (numberOfTile == 0) {
+            return 0;
         }
 
-        return path;
+        // decrement as row and col indexes start from 0
+        --numberOfTile;
+
+        // check if the number of the tile is after the given index of the 0 tile
+        if (goalBoard.getZeroPositionIndexInSolution() != -1 && numberOfTile >= goalBoard.getZeroPositionIndexInSolution()) {
+            // increment as the 0 tile occupies a preceding tile
+            ++numberOfTile;
+        }
+
+        int goalRow = numberOfTile / currentBoard.getSize();
+        int goalCol = numberOfTile % currentBoard.getSize();
+
+        return Math.abs(row - goalRow) + Math.abs(col - goalCol);
+    }
+
+    public Deque<Node> solutionPathToRoot() {
+        Deque<Node> solutionPathToRootDeque = new ArrayDeque<>();
+        Node node = this;
+
+        solutionPathToRootDeque.push(node);
+        while (node.parentNode != null) {
+            solutionPathToRootDeque.push(node.parentNode);
+            node = node.parentNode;
+        }
+
+        return solutionPathToRootDeque;
+    }
+
+    public List<Node> neighbours() {
+        List<Node> neighboursList = new ArrayList<>();
+        Map<String, Board> neighbourBoards = currentBoard.neighbours();
+
+        for (Map.Entry<String, Board> currentBoardEntry : neighbourBoards.entrySet()) {
+            String directionForNeighbour = currentBoardEntry.getKey();
+            Board currentBoard = currentBoardEntry.getValue();
+
+            Node node = new Node(this, currentBoard, goalBoard, directionForNeighbour, g + 1);
+            neighboursList.add(node);
+        }
+
+        return neighboursList;
     }
 }

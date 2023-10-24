@@ -4,53 +4,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Board {
+    private final static String LEFT_DIRECTION = "left";
+    private final static String RIGHT_DIRECTION = "right";
+    private final static String UP_DIRECTION = "up";
+    private final static String DOWN_DIRECTION = "down";
 
-    private final static String LEFT_DIRECTION = "L";
-    private final static String RIGHT_DIRECTION = "R";
-    private final static String UP_DIRECTION = "U";
-    private final static String DOWN_DIRECTION = "D";
+    private final int[][] tiles;
+    private final int size;
+    private final int zeroPositionIndexInSolution;
 
-    private int size;
-    private int[][] tiles;
-    private int zeroPosition;
-
-    public Board(int[][] tiles, int size) {
-        this.tiles = tiles;
-        this.size = size;
-    }
-
-    public Board(int size, int zeroPosition, int [][] tiles) {
+    public Board(int [][] tiles,int size, int zeroPositionIndexInSolution) {
         this.size = size;
         this.tiles = tiles;
-        this.zeroPosition = zeroPosition;
+        this.zeroPositionIndexInSolution = zeroPositionIndexInSolution;
     }
 
-    public int tileAt(int row, int col) {
-        return this.tiles[row][col];
+    public int getZeroPositionIndexInSolution() {
+        return zeroPositionIndexInSolution;
     }
 
-    private void setTileAt(int row, int col, int tile) {
-        this.tiles[row][col] = tile;
-    }
-
-    public int size() {
-        return this.size;
-    }
-
-    public int getZero() {
-        return this.zeroPosition;
-    }
-
-    public int[][] getTiles() {
-        return tiles;
+    public int getSize() {
+        return size;
     }
 
     public Pair getZeroPosition() {
         Pair zeroPosition = new Pair();
 
-        for (int row = 0; row < this.size; row++) {
-            for (int col = 0; col < this.size; col++) {
-                if (this.tileAt(row, col) == 0) {
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                if (getTileAt(row, col) == 0) {
                     zeroPosition.setRow(row);
                     zeroPosition.setCol(col);
                     return zeroPosition;
@@ -61,11 +43,30 @@ public class Board {
         return zeroPosition;
     }
 
-    public HashMap<String, Board> neighbours() {
+    public int getTileAt(int row, int col) {
+        if (row < 0 || row >= size || col < 0 || col >= size) {
+            return -1;
+        }
 
-        HashMap<String, Board> neighbours = new HashMap<>();
+        return tiles[row][col];
+    }
 
-        Pair zeroPosition = this.getZeroPosition();
+    public boolean isEqual(Board board) {
+        for (int row = 0; row < getSize(); row++) {
+            for (int col = 0; col < getSize(); col++) {
+                if (getTileAt(row, col) != board.getTileAt(row, col)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public Map<String, Board> neighbours() {
+        Map<String, Board> neighboursCollection = new HashMap<>();
+
+        Pair zeroPosition = getZeroPosition();
         int currentZeroRowPosition = zeroPosition.getRow();
         int currentZeroColPosition = zeroPosition.getCol();
 
@@ -75,54 +76,51 @@ public class Board {
         directions.put(UP_DIRECTION, new Pair(1, 0));
         directions.put(DOWN_DIRECTION, new Pair(-1, 0));
 
-        for (Map.Entry<String, Pair> currentDirection: directions.entrySet()) {
-            String direction = currentDirection.getKey();
-            Pair coordinates = currentDirection.getValue();
-            this.addNeighbour(neighbours, currentZeroRowPosition, currentZeroColPosition, direction, coordinates);
+        for (Map.Entry<String, Pair> currentDirection : directions.entrySet()) {
+            String directionForNeighbour = currentDirection.getKey();
+            Pair directionCoordinatesForZero = currentDirection.getValue();
+
+            addNeighbour(neighboursCollection, currentZeroRowPosition, currentZeroColPosition,
+                directionForNeighbour, directionCoordinatesForZero);
         }
 
-        return neighbours;
+        return neighboursCollection;
     }
 
-    private void addNeighbour(HashMap<String, Board> neighbours, int currentZeroRowPosition, int currentZeroColPosition,
-                              String direction, Pair directionCoordinates) {
-        int newZeroRowPosition = currentZeroRowPosition + directionCoordinates.getRow();
-        int newZeroColPosition = currentZeroColPosition + directionCoordinates.getCol();
+    private void addNeighbour(Map<String, Board> neighboursCollection, int currentZeroRowPosition,
+                              int currentZeroColPosition, String directionForNeighbour,
+                              Pair directionCoordinatesForZero) {
+        int newZeroRowPosition = currentZeroRowPosition + directionCoordinatesForZero.getRow();
+        int newZeroColPosition = currentZeroColPosition + directionCoordinatesForZero.getCol();
 
-        if (this.isZeroPositionValid(newZeroRowPosition, newZeroColPosition)) {
-            Board neighbourBoard = this.constructNeighbourBoard(currentZeroRowPosition, currentZeroColPosition,
+        if (isNewZeroPositionValid(newZeroRowPosition, newZeroColPosition)) {
+            Board neighbourBoard = constructNeighbourBoard(currentZeroRowPosition, currentZeroColPosition,
                 newZeroRowPosition, newZeroColPosition);
-            neighbours.put(direction, neighbourBoard);
+            neighboursCollection.put(directionForNeighbour, neighbourBoard);
         }
     }
 
-    private Board constructNeighbourBoard(int currentZeroRowPosition, int currentZeroColPosition, int newZeroRowPosition,
-                                          int newZeroColPosition) {
-        int tileToMove = this.tileAt(newZeroRowPosition, newZeroColPosition);
-        int[][] copyOfTiles = new int[this.size][this.size];
+    private boolean isNewZeroPositionValid(int row, int col) {
+        return row >= 0 && row < size && col >= 0 && col < size;
+    }
 
-        for (int i = 0; i < this.size; i++) {
-            System.arraycopy(this.tiles[i], 0, copyOfTiles[i], 0, this.size);
+    private Board constructNeighbourBoard(int currentZeroRowPosition, int currentZeroColPosition,
+                                          int newZeroRowPosition, int newZeroColPosition) {
+        int tileToMove = getTileAt(newZeroRowPosition, newZeroColPosition);
+        int[][] copyOfTiles = new int[size][size];
+
+        for (int i = 0; i < size; i++) {
+            System.arraycopy(tiles[i], 0, copyOfTiles[i], 0, size);
         }
 
-        Board neighbourBoard = new Board(copyOfTiles, this.size);
+        Board neighbourBoard = new Board(copyOfTiles, size, zeroPositionIndexInSolution);
         neighbourBoard.setTileAt(newZeroRowPosition, newZeroColPosition, 0);
         neighbourBoard.setTileAt(currentZeroRowPosition, currentZeroColPosition, tileToMove);
 
         return neighbourBoard;
     }
 
-    private boolean isZeroPositionValid(int row, int col) {
-        return row >= 0 && row < this.size() && col >= 0 && col < this.size();
-    }
-
-    public boolean isEqual(Board board) {
-        for (int row = 0; row < this.size(); row++) {
-            for (int col = 0; col < this.size(); col++) {
-                if (this.tileAt(row, col) != board.tileAt(row, col)) return false;
-            }
-        }
-
-        return true;
+    private void setTileAt(int row, int col, int tile) {
+        tiles[row][col] = tile;
     }
 }
