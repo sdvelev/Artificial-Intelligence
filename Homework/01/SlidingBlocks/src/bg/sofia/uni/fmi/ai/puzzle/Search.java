@@ -37,6 +37,10 @@ public class Search {
                 return candidatesQueue.poll();
             }
 
+            if (isGoalNode(alreadyVisitedDeque.peek())) {
+                return alreadyVisitedDeque.peek();
+            }
+
             threshold = potentialThreshold;
         }
     }
