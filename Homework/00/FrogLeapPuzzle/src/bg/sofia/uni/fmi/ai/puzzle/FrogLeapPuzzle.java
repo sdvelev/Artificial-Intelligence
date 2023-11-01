@@ -1,42 +1,36 @@
 package bg.sofia.uni.fmi.ai.puzzle;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class FrogLeapPuzzle {
 
     private static final int LESS_THAN_ASCII_CODE = 60;
     private static final int GREATER_THAN_ASCII_CODE = 62;
     private static final int UNDERSCORE_ASCII_CODE = 95;
-    private static final char LESS_THAN_SYMBOL = '<';
-    private static final char GREATER_THAN_SYMBOL = '>';
-    private static final char UNDERSCORE_SYMBOL = '_';
+    private static final Character LESS_THAN_SYMBOL = '<';
+    private static final Character GREATER_THAN_SYMBOL = '>';
+    private static final Character UNDERSCORE_SYMBOL = '_';
 
     private static void fulfillStates(Character[] initialState, Character[] goalState, int numberOfFrogs) {
         int totalNumberOfRocks = 2 * numberOfFrogs + 1;
         for (int i = 0; i < totalNumberOfRocks; i++) {
             if (i < numberOfFrogs) {
-                initialState[i] = GREATER_THAN_SYMBOL;
+                initialState[i] = (char) GREATER_THAN_ASCII_CODE;
+                goalState[i] = (char) LESS_THAN_ASCII_CODE;
             } else if (i == numberOfFrogs) {
-                initialState[i] = UNDERSCORE_SYMBOL;
+                initialState[i] = (char) UNDERSCORE_ASCII_CODE;
+                goalState[i] = (char) UNDERSCORE_ASCII_CODE;
             } else {
-                initialState[i] = LESS_THAN_SYMBOL;
+                initialState[i] = (char) LESS_THAN_ASCII_CODE;
+                goalState[i] = (char) GREATER_THAN_ASCII_CODE;
             }
         }
 
-        for (int i = 0; i < totalNumberOfRocks; i++) {
-            if ((int) initialState[i] == GREATER_THAN_ASCII_CODE) {
-                goalState[i] = (char) LESS_THAN_ASCII_CODE;
-            } else if ((int) initialState[i] == LESS_THAN_ASCII_CODE) {
-                goalState[i] = (char) GREATER_THAN_ASCII_CODE;
-            } else {
-                goalState[i] = (char) UNDERSCORE_ASCII_CODE;
-            }
-        }
     }
     private static int getIndexOfEmptyRock(Character[] state){
         for (int i = 0; i < state.length; i++){
@@ -47,7 +41,7 @@ public class FrogLeapPuzzle {
         return -1;
     }
 
-    private static boolean isVisited(Character[] state, List<Character[]> visitedStates){
+    private static boolean isVisited(Character[] state, Set<Character[]> visitedStates){
         for (Character[] currentState : visitedStates) {
             if (Arrays.equals(state, currentState)) {
                 return true;
@@ -64,7 +58,7 @@ public class FrogLeapPuzzle {
     }
 
     private static boolean rightLeapIfPossible(int indexOfEmptyRock, int rocksToJump, Character[] initialState,
-                                               List<Character[]> visitedStates, Deque<Character[]> stack) {
+                                               Set<Character[]> visitedStates, Deque<Character[]> stack) {
         if ((indexOfEmptyRock >= rocksToJump) &&
             (initialState[indexOfEmptyRock - rocksToJump] == GREATER_THAN_SYMBOL) &&
             (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock - rocksToJump, indexOfEmptyRock)),
@@ -79,7 +73,7 @@ public class FrogLeapPuzzle {
     }
 
     private static boolean leftLeapIfPossible(int indexOfEmptyRock, int rocksToJump, Character[] initialState,
-                                              List<Character[]> visitedStates, Deque<Character[]> stack) {
+                                              Set<Character[]> visitedStates, Deque<Character[]> stack) {
         if ((indexOfEmptyRock < initialState.length - rocksToJump) &&
             (initialState[indexOfEmptyRock + rocksToJump] == LESS_THAN_SYMBOL) &&
             (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock + rocksToJump, indexOfEmptyRock)),
@@ -122,7 +116,7 @@ public class FrogLeapPuzzle {
         fulfillStates(initialState, goalState, numberOfFrogs);
 
         Deque<Character[]> stack = new ArrayDeque<>();
-        List<Character[]> visitedStates = new ArrayList<>();
+        Set<Character[]> visitedStates = new LinkedHashSet<>();
         stack.push(initialState.clone());
 
         //Algorithm
@@ -146,6 +140,6 @@ public class FrogLeapPuzzle {
         }
 
         // Output
-       printUniqueStates(totalNumberOfRocks, resultStack);
+        printUniqueStates(totalNumberOfRocks, resultStack);
     }
 }
