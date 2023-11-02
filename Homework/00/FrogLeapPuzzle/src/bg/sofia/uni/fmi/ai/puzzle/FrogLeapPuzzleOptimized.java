@@ -118,6 +118,7 @@ public class FrogLeapPuzzleOptimized {
         //Input
         Scanner scanner = new Scanner(System.in);
         int numberOfFrogs = scanner.nextInt();
+        scanner.close();
 
         //Preparation
         int totalNumberOfRocks = 2 * numberOfFrogs + 1;
