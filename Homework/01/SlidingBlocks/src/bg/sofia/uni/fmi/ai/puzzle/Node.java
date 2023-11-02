@@ -20,7 +20,7 @@ public class Node {
         this.goalBoard = goalBoard;
         this.direction = direction;
         this.g = g;
-        this.manhattanDistance =this.getTotalManhattanDistance();
+        this.manhattanDistance = getTotalManhattanDistance();
     }
 
     public Board getCurrentBoard() {
@@ -89,7 +89,7 @@ public class Node {
     }
 
     public List<Node> neighbours() {
-        List<Node> neighboursList = new ArrayList<>();
+        List<Node> neighboursNodesList = new ArrayList<>();
         Map<String, Board> neighbourBoards = currentBoard.neighbours();
 
         for (Map.Entry<String, Board> currentBoardEntry : neighbourBoards.entrySet()) {
@@ -97,9 +97,9 @@ public class Node {
             Board currentBoard = currentBoardEntry.getValue();
 
             Node node = new Node(this, currentBoard, goalBoard, directionForNeighbour, g + 1);
-            neighboursList.add(node);
+            neighboursNodesList.add(node);
         }
 
-        return neighboursList;
+        return neighboursNodesList;
     }
 }

@@ -37,10 +37,6 @@ public class Search {
                 return candidatesQueue.poll();
             }
 
-            if (isGoalNode(alreadyVisitedDeque.peek())) {
-                return alreadyVisitedDeque.peek();
-            }
-
             threshold = potentialThreshold;
         }
     }
@@ -156,6 +152,8 @@ public class Search {
             }
         }
 
+        scanner.close();
+
         int[][] goalBoardArray = new int[sizeOfRow][];
         for (int i = 0; i < goalBoardArray.length; i++) {
             goalBoardArray[i] = new int[sizeOfRow];
@@ -194,18 +192,13 @@ public class Search {
             return;
         }
 
-        Node foundNode;
-        if (solution.isGoalNode(startNode)) {
-            foundNode = startNode;
-        } else {
-            long startTime = System.currentTimeMillis();
-            foundNode = solution.IDAStarAlgorithm();
-            long endTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
+        Node foundNode = solution.IDAStarAlgorithm();
+        long endTime = System.currentTimeMillis();
 
-            double totalRunningTime = (endTime - startTime) / 1000.0;
-            System.out.println("Total time for finding the path (in seconds): " +
-                DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
-        }
+        double totalRunningTime = (endTime - startTime) / 1000.0;
+//        System.out.println("Total time for finding the path (in seconds): " +
+//            DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
 
         System.out.println(foundNode.getG());
 
