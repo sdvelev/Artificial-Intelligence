@@ -41,11 +41,10 @@ public class FrogLeapPuzzle {
         return -1;
     }
 
-    private static Character[] swapPositions(Character[] state, int firstIndex, int secondIndex){
+    private static void swapPositions(Character[] state, int firstIndex, int secondIndex){
         Character temporary = state[firstIndex];
         state[firstIndex] = state[secondIndex];
         state[secondIndex] = temporary;
-        return state;
     }
 
     private static Character[] rightLeapIfPossible(int indexOfEmptyRock, int rocksToJump, Character[] initialState) {
