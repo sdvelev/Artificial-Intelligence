@@ -4,9 +4,11 @@ import java.text.DecimalFormat;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.LinkedHashSet;
 import java.util.Scanner;
+import java.util.Set;
 
-public class FrogLeapPuzzle {
+public class FrogLeapPuzzleOldVersion {
     private static final DecimalFormat DECIMAL_FORMAT_ROUND_TWO = new DecimalFormat("0.00");
 
     private static final int LESS_THAN_ASCII_CODE = 60;
@@ -41,6 +43,15 @@ public class FrogLeapPuzzle {
         return -1;
     }
 
+    private static boolean isVisited(Character[] state, Set<Character[]> visitedStates){
+        for (Character[] currentState : visitedStates) {
+            if (Arrays.equals(state, currentState)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static Character[] swapPositions(Character[] state, int firstIndex, int secondIndex){
         Character temporary = state[firstIndex];
         state[firstIndex] = state[secondIndex];
@@ -48,78 +59,56 @@ public class FrogLeapPuzzle {
         return state;
     }
 
-    private static Character[] rightLeapIfPossible(int indexOfEmptyRock, int rocksToJump, Character[] initialState) {
+    private static boolean rightLeapIfPossible(int indexOfEmptyRock, int rocksToJump, Character[] initialState,
+                                               Set<Character[]> visitedStates, Deque<Character[]> stack) {
         if ((indexOfEmptyRock >= rocksToJump) &&
-            (initialState[indexOfEmptyRock - rocksToJump] == GREATER_THAN_SYMBOL)) {
+            (initialState[indexOfEmptyRock - rocksToJump] == GREATER_THAN_SYMBOL) &&
+            (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock - rocksToJump, indexOfEmptyRock)),
+                visitedStates))){
+            stack.push(initialState.clone());
             swapPositions(initialState, indexOfEmptyRock - rocksToJump, indexOfEmptyRock);
-            return initialState;
-        }
-        return null;
-    }
-
-    private static Character[] leftLeapIfPossible(int indexOfEmptyRock, int rocksToJump, Character[] initialState) {
-        if ((indexOfEmptyRock < initialState.length - rocksToJump) &&
-            (initialState[indexOfEmptyRock + rocksToJump] == LESS_THAN_SYMBOL)) {
-            swapPositions(initialState, indexOfEmptyRock + rocksToJump, indexOfEmptyRock);
-            return initialState;
-        }
-        return null;
-    }
-
-    private static boolean dfsAlgorithm(Character[] initialState, Character[] goalState, Deque<Character[]> stack) {
-        if (initialState == null) {
-            return false;
-        }
-
-        if (Arrays.equals(initialState, goalState)) {
+            stack.push(initialState.clone());
+            visitedStates.add(initialState.clone());
             return true;
         }
-
-        int indexOfEmptyRock = getIndexOfEmptyRock(initialState);
-
-        Character[] twoRocksRightLeap = rightLeapIfPossible(indexOfEmptyRock, 2, initialState.clone());
-        if (dfsAlgorithm(twoRocksRightLeap, goalState, stack)) {
-            stack.push(twoRocksRightLeap);
-            return true;
-        }
-
-        Character[] oneRockRightLeap = rightLeapIfPossible(indexOfEmptyRock, 1, initialState.clone());
-        if (dfsAlgorithm(oneRockRightLeap, goalState, stack)) {
-            stack.push(oneRockRightLeap);
-            return true;
-        }
-
-        Character[] oneRockLeftLeap = leftLeapIfPossible(indexOfEmptyRock, 1, initialState.clone());
-        if (dfsAlgorithm(oneRockLeftLeap, goalState, stack)) {
-            stack.push(oneRockLeftLeap);
-            return true;
-        }
-
-        Character[] twoRocksLeftLeap = leftLeapIfPossible(indexOfEmptyRock, 2, initialState.clone());
-        if (dfsAlgorithm(twoRocksLeftLeap, goalState, stack)) {
-            stack.push(twoRocksLeftLeap);
-            return true;
-        }
-
         return false;
     }
 
-    private static void printStatesReversed(Deque<Character[]> resultStack) {
+    private static boolean leftLeapIfPossible(int indexOfEmptyRock, int rocksToJump, Character[] initialState,
+                                              Set<Character[]> visitedStates, Deque<Character[]> stack) {
+        if ((indexOfEmptyRock < initialState.length - rocksToJump) &&
+            (initialState[indexOfEmptyRock + rocksToJump] == LESS_THAN_SYMBOL) &&
+            (!isVisited((swapPositions(initialState.clone(), indexOfEmptyRock + rocksToJump, indexOfEmptyRock)),
+                visitedStates))){
+            stack.push(initialState.clone());
+            swapPositions(initialState, indexOfEmptyRock + rocksToJump, indexOfEmptyRock);
+            stack.push(initialState.clone());
+            visitedStates.add(initialState.clone());
+            return true;
+        }
+        return false;
+    }
+
+    private static void printUniqueStates(int totalNumberOfRocks, Deque<Character[]> resultStack) {
+        Character[] previousState = new Character[totalNumberOfRocks];
         while (!resultStack.isEmpty()) {
             Character[] currentState = resultStack.poll();
-
+            if (Arrays.equals(currentState, previousState)) {
+                continue;
+            }
             for (Character character : currentState) {
                 System.out.print(character);
             }
             System.out.println();
+            System.arraycopy(currentState, 0, previousState, 0, totalNumberOfRocks);
         }
     }
 
     public static void main(String[] args) {
+
         //Input
         Scanner scanner = new Scanner(System.in);
         int numberOfFrogs = scanner.nextInt();
-        scanner.close();
 
         //Preparation
         int totalNumberOfRocks = 2 * numberOfFrogs + 1;
@@ -129,18 +118,35 @@ public class FrogLeapPuzzle {
         fulfillStates(initialState, goalState, numberOfFrogs);
 
         Deque<Character[]> stack = new ArrayDeque<>();
+        Set<Character[]> visitedStates = new LinkedHashSet<>();
+        stack.push(initialState.clone());
 
         //Algorithm
         long startTime = System.currentTimeMillis();
-        dfsAlgorithm(initialState.clone(), goalState, stack);
-        stack.push(initialState);
+        while (!Arrays.equals(initialState, goalState)) {
+            int indexOfEmptyRock = getIndexOfEmptyRock(initialState);
+            if (rightLeapIfPossible(indexOfEmptyRock, 2, initialState, visitedStates, stack)) {
+                continue;
+            } else if (rightLeapIfPossible(indexOfEmptyRock, 1, initialState, visitedStates, stack)) {
+                continue;
+            } else if (leftLeapIfPossible(indexOfEmptyRock, 1, initialState, visitedStates, stack)) {
+                continue;
+            } else if (leftLeapIfPossible(indexOfEmptyRock, 2, initialState, visitedStates, stack)) {
+                continue;
+            }
+            initialState = stack.pop();
+        }
         long endTime = System.currentTimeMillis();
 
+        Deque<Character[]> resultStack = new ArrayDeque<>();
+        while (!stack.isEmpty()) {
+            resultStack.push(stack.poll());
+        }
+
+        // Output
         double totalRunningTime = (endTime - startTime) / 1000.0;
         System.out.println("Total time for finding the path (in seconds): " +
             DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
-
-        // Output
-        printStatesReversed(stack);
+        printUniqueStates(totalNumberOfRocks, resultStack);
     }
 }
