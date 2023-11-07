@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-public class NQueen {
+public class NQueens {
     private final static char QUEEN_SYMBOL = '*';
-    private final static char EMPTY_SYMBOL = '_';
+    private final static char EMPTY_SQUARE_SYMBOL = '_';
     private final static Random RANDOM_GENERATOR = new Random();
     private static final DecimalFormat DECIMAL_FORMAT_ROUND_TWO = new DecimalFormat("0.00");
 
@@ -21,7 +21,7 @@ public class NQueen {
     private final List<Integer> potentialQueensToBeChosen;
     private final int maxMovesBeforeRestart;
 
-    public NQueen(int numberOfQueens) {
+    public NQueens(int numberOfQueens) {
         this.numberOfQueens = numberOfQueens;
         this.queensBoard = new int[numberOfQueens];
         this.numberOfQueensInRow = new int[numberOfQueens];
@@ -41,7 +41,11 @@ public class NQueen {
 
             if (potentialQueensToBeChosen.isEmpty()) {
                 long endTime = System.currentTimeMillis();
-                printSolutionBoard();
+
+                if (numberOfQueens <= 100) {
+                    printSolutionBoard();
+                }
+
                 return endTime;
             }
 
@@ -49,16 +53,16 @@ public class NQueen {
                 .get(RANDOM_GENERATOR.nextInt(potentialQueensToBeChosen.size()));
             findQueensByRowIndexWithMinConflicts(randomlyChosenColIndex);
 
-            if (potentialQueensToBeChosen.isEmpty()) {
-                ++movesCounter;
-                if (movesCounter > maxMovesBeforeRestart) {
-                    movesCounter = 0;
-                    constructRandomBoard();
-                }
-            } else {
+            if (!potentialQueensToBeChosen.isEmpty()) {
                 int randomlyChosenRowIndex = potentialQueensToBeChosen
                     .get(RANDOM_GENERATOR.nextInt(potentialQueensToBeChosen.size()));
                 queensBoard[randomlyChosenColIndex] = randomlyChosenRowIndex;
+            }
+
+            ++movesCounter;
+            if (movesCounter > maxMovesBeforeRestart) {
+                movesCounter = 0;
+                constructRandomBoard();
             }
         }
     }
@@ -70,7 +74,9 @@ public class NQueen {
 
         for (int colIndex = 0; colIndex < numberOfQueens; colIndex++) {
             int rowIndex = queensBoard[colIndex];
+            // left diagonals start from the upper right corner
             int leftDiagonalIndex = numberOfQueens - 1 + rowIndex - colIndex;
+            // right diagonals start from the upper left corner
             int rightDiagonalIndex = rowIndex + colIndex;
 
             ++numberOfQueensInRow[rowIndex];
@@ -120,24 +126,28 @@ public class NQueen {
     }
 
     private int findConflictsFor(int rowIndex, int colIndex) {
+        // left diagonals start from the upper right corner
         int leftDiagonalIndex = numberOfQueens - 1 + rowIndex - colIndex;
+        // right diagonals start from the upper left corner
         int rightDiagonalIndex = rowIndex + colIndex;
 
-        return numberOfQueensInRow[rowIndex] - 1 + numberOfQueensInLeftDiagonal[leftDiagonalIndex] - 1 +
+        return numberOfQueensInRow[rowIndex] - 1 +
+            numberOfQueensInLeftDiagonal[leftDiagonalIndex] - 1 +
             numberOfQueensInRightDiagonal[rightDiagonalIndex] - 1;
     }
 
     private void constructRandomBoard() {
-        for (int col = 0; col < numberOfQueens; col++) {
-            queensBoard[col] = numberOfQueens - col - 1;
+        // index - for the col, value of the index - for the row (count upside down)
+        for (int colIndex = 0; colIndex < numberOfQueens; colIndex++) {
+            queensBoard[colIndex] = numberOfQueens - colIndex - 1;
         }
 
         // exchange of queens positions
-        for (int col = 0; col < numberOfQueens; col++) {
-            int newCol = RANDOM_GENERATOR.nextInt(numberOfQueens);
-            int previousRow = queensBoard[col];
-            queensBoard[col] = queensBoard[newCol];
-            queensBoard[newCol] = previousRow;
+        for (int colIndex = 0; colIndex < numberOfQueens; colIndex++) {
+            int newColIndex = RANDOM_GENERATOR.nextInt(numberOfQueens);
+            int previousRowIndex = queensBoard[colIndex];
+            queensBoard[colIndex] = queensBoard[newColIndex];
+            queensBoard[newColIndex] = previousRowIndex;
         }
     }
 
@@ -147,11 +157,13 @@ public class NQueen {
                 if (queensBoard[colIndex] == rowIndex) {
                     System.out.print(QUEEN_SYMBOL);
                 } else {
-                    System.out.print(EMPTY_SYMBOL);
+                    System.out.print(EMPTY_SQUARE_SYMBOL);
                 }
             }
             System.out.println();
         }
+
+//        System.out.println(Arrays.toString(queensBoard));
     }
 
     public static void main(String[] args) {
@@ -159,16 +171,19 @@ public class NQueen {
         int numberOfQueens = scanner.nextInt();
         scanner.close();
 
-        if (numberOfQueens <= 3) {
+        if (numberOfQueens <= 0 || numberOfQueens == 2 || numberOfQueens == 3) {
+            System.out.println(-1);
             return;
         }
 
-        NQueen puzzle = new NQueen(numberOfQueens);
+        NQueens puzzle = new NQueens(numberOfQueens);
         long startTime = System.currentTimeMillis();
         long endTime = puzzle.algorithm();
 
         double totalRunningTime = (endTime - startTime) / 1000.0;
-        System.out.println("The total time for finding the solution (in seconds): " +
-            DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
+
+        if (numberOfQueens > 100) {
+            System.out.println(DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
+        }
     }
 }
