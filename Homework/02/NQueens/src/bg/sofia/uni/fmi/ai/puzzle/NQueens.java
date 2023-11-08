@@ -59,12 +59,33 @@ public class NQueens {
                 queensBoard[randomlyChosenColIndex] = randomlyChosenRowIndex;
             }
 
-            ++movesCounter;
-            if (movesCounter > maxMovesBeforeRestart) {
+            if (restartIfNeeded(++movesCounter)) {
                 movesCounter = 0;
-                constructRandomBoard();
             }
         }
+    }
+
+    private boolean restartIfNeeded(int movesCounter) {
+        if (movesCounter > maxMovesBeforeRestart) {
+            constructRandomBoard();
+            return true;
+        }
+        return false;
+    }
+
+    private void printSolutionBoard() {
+        for (int rowIndex = 0; rowIndex < numberOfQueens; rowIndex++) {
+            for (int colIndex = 0; colIndex < numberOfQueens; colIndex++) {
+                if (queensBoard[colIndex] == rowIndex) {
+                    System.out.print(QUEEN_SYMBOL);
+                } else {
+                    System.out.print(EMPTY_SQUARE_SYMBOL);
+                }
+            }
+            System.out.println();
+        }
+
+//        System.out.println(Arrays.toString(queensBoard));
     }
 
     private void findNumberOfQueensInEntries() {
@@ -149,21 +170,6 @@ public class NQueens {
             queensBoard[colIndex] = queensBoard[newColIndex];
             queensBoard[newColIndex] = previousRowIndex;
         }
-    }
-
-    private void printSolutionBoard() {
-        for (int rowIndex = 0; rowIndex < numberOfQueens; rowIndex++) {
-            for (int colIndex = 0; colIndex < numberOfQueens; colIndex++) {
-                if (queensBoard[colIndex] == rowIndex) {
-                    System.out.print(QUEEN_SYMBOL);
-                } else {
-                    System.out.print(EMPTY_SQUARE_SYMBOL);
-                }
-            }
-            System.out.println();
-        }
-
-//        System.out.println(Arrays.toString(queensBoard));
     }
 
     public static void main(String[] args) {
