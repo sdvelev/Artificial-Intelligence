@@ -1,7 +1,6 @@
 package bg.sofia.uni.fmi.ai.puzzle;
 
 import java.text.DecimalFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
@@ -26,11 +25,9 @@ public class Search {
         int potentialThreshold;
 
         while (true) {
-            Deque<Node> alreadyVisitedDeque = new ArrayDeque<>();
             Queue<Node> candidatesQueue = new PriorityQueue<>(Comparator.comparingInt(Node::f));
 
-            alreadyVisitedDeque.push(startNode);
-            potentialThreshold = searchRecursive(alreadyVisitedDeque, candidatesQueue, threshold);
+            potentialThreshold = searchRecursive(startNode, candidatesQueue, threshold);
 
             // reached goal state
             if (potentialThreshold == 0) {
@@ -41,8 +38,7 @@ public class Search {
         }
     }
 
-    private int searchRecursive(Deque<Node> alreadyVisitedDeque, Queue<Node> candidatesQueue, int threshold) {
-        Node currentNode = alreadyVisitedDeque.peek();
+    private int searchRecursive(Node currentNode, Queue<Node> candidatesQueue, int threshold) {
 
         if (currentNode != null && currentNode.f() > threshold) {
             candidatesQueue.add(currentNode);
@@ -61,23 +57,18 @@ public class Search {
         }
 
         for (Node neighbourNode : neighboursNodesList) {
-            if (!alreadyVisitedDeque.contains(neighbourNode)) {
-                if (currentNode.getParentNode() != null &&
-                    currentNode.getParentNode().getCurrentBoard().isEqual(neighbourNode.getCurrentBoard())) {
-                    continue;
-                }
-
-                alreadyVisitedDeque.push(neighbourNode);
-
-                int recursiveFunctionResult = searchRecursive(alreadyVisitedDeque, candidatesQueue, threshold);
-
-                // reached goal state
-                if (recursiveFunctionResult == 0) {
-                    return 0;
-                }
-
-                alreadyVisitedDeque.pop();
+            if (currentNode.getParentNode() != null &&
+                currentNode.getParentNode().getCurrentBoard().isEqual(neighbourNode.getCurrentBoard())) {
+                continue;
             }
+
+            int recursiveFunctionResult = searchRecursive(neighbourNode, candidatesQueue, threshold);
+
+            // reached goal state
+            if (recursiveFunctionResult == 0) {
+                return 0;
+            }
+
         }
 
         if (!candidatesQueue.isEmpty()) {
@@ -197,8 +188,8 @@ public class Search {
         long endTime = System.currentTimeMillis();
 
         double totalRunningTime = (endTime - startTime) / 1000.0;
-//        System.out.println("Total time for finding the path (in seconds): " +
-//            DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
+        System.out.println("Total time for finding the path (in seconds): " +
+            DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
 
         System.out.println(foundNode.getG());
 
