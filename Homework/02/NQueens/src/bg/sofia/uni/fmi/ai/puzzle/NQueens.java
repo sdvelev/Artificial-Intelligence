@@ -11,6 +11,8 @@ public class NQueens {
     private final static char QUEEN_SYMBOL = '*';
     private final static char EMPTY_SQUARE_SYMBOL = '_';
     private final static int MAX_QUEENS_TO_PRINT_BOARD = 100;
+    private final static int TWO_CHESS_BOARD = 2;
+    private final static int THREE_CHESS_BOARD = 3;
     private final static Random RANDOM_GENERATOR = new Random();
     private static final DecimalFormat DECIMAL_FORMAT_ROUND_TWO = new DecimalFormat("0.00");
 
@@ -178,7 +180,7 @@ public class NQueens {
         int numberOfQueens = scanner.nextInt();
         scanner.close();
 
-        if (numberOfQueens <= 0 || numberOfQueens == 2 || numberOfQueens == 3) {
+        if (numberOfQueens <= 0 || numberOfQueens == TWO_CHESS_BOARD || numberOfQueens == THREE_CHESS_BOARD) {
             System.out.println(-1);
             return;
         }
@@ -189,7 +191,7 @@ public class NQueens {
 
         double totalRunningTime = (endTime - startTime) / 1000.0;
 
-        if (numberOfQueens > 100) {
+        if (numberOfQueens > MAX_QUEENS_TO_PRINT_BOARD) {
             System.out.println(DECIMAL_FORMAT_ROUND_TWO.format(totalRunningTime));
         }
     }
