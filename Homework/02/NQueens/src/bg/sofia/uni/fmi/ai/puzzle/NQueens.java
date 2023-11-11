@@ -10,6 +10,7 @@ import java.util.Scanner;
 public class NQueens {
     private final static char QUEEN_SYMBOL = '*';
     private final static char EMPTY_SQUARE_SYMBOL = '_';
+    private final static int MAX_QUEENS_TO_PRINT_BOARD = 100;
     private final static Random RANDOM_GENERATOR = new Random();
     private static final DecimalFormat DECIMAL_FORMAT_ROUND_TWO = new DecimalFormat("0.00");
 
@@ -42,7 +43,7 @@ public class NQueens {
             if (potentialQueensToBeChosen.isEmpty()) {
                 long endTime = System.currentTimeMillis();
 
-                if (numberOfQueens <= 100) {
+                if (numberOfQueens <= MAX_QUEENS_TO_PRINT_BOARD) {
                     printSolutionBoard();
                 }
 
@@ -51,7 +52,7 @@ public class NQueens {
 
             int randomlyChosenColIndex = potentialQueensToBeChosen
                 .get(RANDOM_GENERATOR.nextInt(potentialQueensToBeChosen.size()));
-            findQueensByRowIndexWithMinConflicts(randomlyChosenColIndex);
+            findQueensPositionByRowIndexWithMinConflicts(randomlyChosenColIndex);
 
             if (!potentialQueensToBeChosen.isEmpty()) {
                 int randomlyChosenRowIndex = potentialQueensToBeChosen
@@ -124,7 +125,7 @@ public class NQueens {
         }
     }
 
-    private void findQueensByRowIndexWithMinConflicts(int colIndex) {
+    private void findQueensPositionByRowIndexWithMinConflicts(int colIndex) {
         int rowIndex = queensBoard[colIndex];
         int minConflicts = findConflictsFor(rowIndex, colIndex);
         potentialQueensToBeChosen.clear();
