@@ -10,12 +10,13 @@ public class TSP {
     private final static int MAX_EPOCHS_COEFFICIENT = 16;
     private final static int NUMBER_OF_MIDDLE_EPOCHS_TO_PRINT = 8;
     private final static double ROUTES_IN_ALGORITHM_COEFFICIENT = 0.5;
-    private final static int MUTATE_POSSIBILITIES_INDEX = 4;
+    private final static int MUTATE_POSSIBILITIES_INDEX = 5;
     private final static int MUTATION_SWAP_TWO_CITIES_IN_ROUTE_INDEX = 0;
     private final static int MUTATION_INSERT_CITY_BETWEEN_TWO_CITIES_INDEX = 1;
     private final static int MUTATION_REVERSE_CITIES_IN_INTERVAL_INDEX = 2;
+    private final static double ROUTES_TO_MUTATE_IF_SIMILAR_COEFFICIENT = 0.1;
     private final static Random RANDOM_GENERATOR = new Random();
-    private static final DecimalFormat DECIMAL_FORMAT_ROUND_TWO = new DecimalFormat("0.00");
+    private static final DecimalFormat DECIMAL_FORMAT_ROUND_TWELVE = new DecimalFormat("0.000000000000");
 
     private final int numberOfCities;
     private int numberOfRoutesInAlgorithm;
@@ -52,7 +53,7 @@ public class TSP {
 
         Route firstShortestRoute = routesCollection.calculateTheShortestRoute();
         System.out.println("In first epoch 0, the route with the shortest distance is with length: "
-            + DECIMAL_FORMAT_ROUND_TWO.format(firstShortestRoute.getTotalDistanceBetweenCities()) + " City sequence: "
+            + DECIMAL_FORMAT_ROUND_TWELVE.format(firstShortestRoute.getTotalDistanceBetweenCities()) + " City sequence: "
             + firstShortestRoute.getNameOfCitiesInRoute());
 
         List<Integer> indexesOfEpochsToPrint = generateIndexesOfEpochsToPrint(maxEpochs);
@@ -62,7 +63,7 @@ public class TSP {
 
             if (indexesOfEpochsToPrint.contains(indexOfEpoch)) {
                 System.out.println("In epoch " + indexOfEpoch + ", the route with the shortest distance is with length: "
-                    + DECIMAL_FORMAT_ROUND_TWO.format(currentlyShortestRouteBeforeChildren.getTotalDistanceBetweenCities())
+                    + DECIMAL_FORMAT_ROUND_TWELVE.format(currentlyShortestRouteBeforeChildren.getTotalDistanceBetweenCities())
                     + " City Sequence: "
                     + currentlyShortestRouteBeforeChildren.getNameOfCitiesInRoute());
             }
@@ -80,6 +81,15 @@ public class TSP {
 
             if (equalDistanceCounter > MAX_EPOCHS_COEFFICIENT) {
                 randomSearch = true;
+
+                for (int i = 0;
+                     i < ROUTES_TO_MUTATE_IF_SIMILAR_COEFFICIENT * this.routesCollection.getRoutesCollection().size();
+                     i++){
+                    int randomRouteIndex = RANDOM_GENERATOR.nextInt(MAX_EPOCHS_COEFFICIENT * numberOfCities);
+                    Route randomRute = this.routesCollection.getRoutesCollection().get(randomRouteIndex);
+
+                    this.routesCollection.getRoutesCollection().set(randomRouteIndex, mutateRandomlyByRoute(randomRute));
+                }
             } else {
                 randomSearch = false;
             }
@@ -87,11 +97,34 @@ public class TSP {
 
         Route finalShortestRoute = routesCollection.calculateTheShortestRoute();
         System.out.println("In last epoch " + (maxEpochs - 1) + ", the route with the shortest distance is with length: "
-            + DECIMAL_FORMAT_ROUND_TWO.format(finalShortestRoute.getTotalDistanceBetweenCities()) + " City sequence: "
+            + DECIMAL_FORMAT_ROUND_TWELVE.format(finalShortestRoute.getTotalDistanceBetweenCities()) + " City sequence: "
             + finalShortestRoute.getNameOfCitiesInRoute());
 
     }
 
+    private Route mutateRandomlyByRoute(Route routeToMutate) {
+        int mutationProbabilityIndex = RANDOM_GENERATOR.nextInt(MUTATE_POSSIBILITIES_INDEX);
+        int mutationSecondIndex = RANDOM_GENERATOR.nextInt(numberOfCities);
+        int mutationFirstIndex;
+        if (mutationSecondIndex != 0) {
+            mutationFirstIndex = RANDOM_GENERATOR.nextInt(mutationSecondIndex);
+        } else {
+            mutationFirstIndex = 0;
+        }
+
+        if (mutationProbabilityIndex == MUTATION_SWAP_TWO_CITIES_IN_ROUTE_INDEX) {
+            routeToMutate.swapTwoCitiesInRoute(routeToMutate.getCityAtIndex(mutationFirstIndex),
+                routeToMutate.getCityAtIndex(mutationSecondIndex));
+        } else if (mutationProbabilityIndex == MUTATION_INSERT_CITY_BETWEEN_TWO_CITIES_INDEX) {
+            routeToMutate.insertCityBetweenTwoCities(routeToMutate.getCityAtIndex(mutationFirstIndex),
+                mutationSecondIndex);
+        } else if (mutationProbabilityIndex == MUTATION_REVERSE_CITIES_IN_INTERVAL_INDEX) {
+            routeToMutate.reverseCitiesInInterval(mutationFirstIndex, mutationSecondIndex);
+        }
+
+        routeToMutate.calculateTotalDistanceBetweenCities();
+        return routeToMutate;
+    }
 
     private void search(boolean randomSearch) {
         List<Route> shortestRoutesToCrossOver = !randomSearch ? this.routesCollection.findTheShortestRoutesInCollection()
@@ -102,42 +135,11 @@ public class TSP {
             List<Route> newPairOfRoutesAfterCrossOver = twoPointCrossOver(shortestRoutesToCrossOver.get(i),
                 shortestRoutesToCrossOver.get(i + 1));
 
-            int mutationProbabilityIndex = RANDOM_GENERATOR.nextInt(MUTATE_POSSIBILITIES_INDEX);
-            int mutationSecondIndex = RANDOM_GENERATOR.nextInt(numberOfCities);
-            int mutationFirstIndex;
-            if (mutationSecondIndex != 0) {
-                mutationFirstIndex = RANDOM_GENERATOR.nextInt(mutationSecondIndex);
-            } else {
-                mutationFirstIndex = 0;
-            }
-//            int mutationFirstIndex = RANDOM_GENERATOR.nextInt(mutationSecondIndex);
+            mutateRandomlyByRoute(newPairOfRoutesAfterCrossOver.get(0));
+            mutateRandomlyByRoute(newPairOfRoutesAfterCrossOver.get(1));
 
-            if (mutationProbabilityIndex == MUTATION_SWAP_TWO_CITIES_IN_ROUTE_INDEX) {
-                Route firstRouteOfPair = newPairOfRoutesAfterCrossOver.get(0);
-                Route secondRouteOfPair = newPairOfRoutesAfterCrossOver.get(1);
-
-                firstRouteOfPair.swapTwoCitiesInRoute(firstRouteOfPair.getCityAtIndex(mutationFirstIndex),
-                    firstRouteOfPair.getCityAtIndex(mutationSecondIndex));
-                secondRouteOfPair.swapTwoCitiesInRoute(secondRouteOfPair.getCityAtIndex(mutationFirstIndex),
-                    secondRouteOfPair.getCityAtIndex(mutationSecondIndex));
-            } else if (mutationProbabilityIndex == MUTATION_INSERT_CITY_BETWEEN_TWO_CITIES_INDEX) {
-                Route firstRouteOfPair = newPairOfRoutesAfterCrossOver.get(0);
-                Route secondRouteOfPair = newPairOfRoutesAfterCrossOver.get(1);
-
-                firstRouteOfPair.insertCityBetweenTwoCities(firstRouteOfPair.getCityAtIndex(mutationFirstIndex),
-                    mutationSecondIndex);
-                secondRouteOfPair.insertCityBetweenTwoCities(secondRouteOfPair.getCityAtIndex(mutationFirstIndex),
-                    mutationSecondIndex);
-            } else if (mutationProbabilityIndex == MUTATION_REVERSE_CITIES_IN_INTERVAL_INDEX) {
-                Route firstRouteOfPair = newPairOfRoutesAfterCrossOver.get(0);
-                Route secondRouteOfPair = newPairOfRoutesAfterCrossOver.get(1);
-
-                firstRouteOfPair.reverseCitiesInInterval(mutationFirstIndex, mutationSecondIndex);
-                secondRouteOfPair.reverseCitiesInInterval(mutationFirstIndex, mutationSecondIndex);
-            }
-
-            newPairOfRoutesAfterCrossOver.get(0).calculateTotalDistanceBetweenCities();
-            newPairOfRoutesAfterCrossOver.get(1).calculateTotalDistanceBetweenCities();
+//            newPairOfRoutesAfterCrossOver.get(0).calculateTotalDistanceBetweenCities();
+//            newPairOfRoutesAfterCrossOver.get(1).calculateTotalDistanceBetweenCities();
 
             newRoutesResultsList.add(newPairOfRoutesAfterCrossOver.get(0));
             newRoutesResultsList.add(newPairOfRoutesAfterCrossOver.get(1));
@@ -259,6 +261,8 @@ public class TSP {
 }
 
 //Input for UK Cities:
+
+//12
 //0.000190032 -0.000285946 Aberystwyth
 //383.458	-0.000608756 Brighton
 //-27.0206 -282.758 Edinburgh
@@ -273,5 +277,7 @@ public class TSP {
 //217.343	-447.089 Stratford
 
 // Expected output
+
 //Shortest distance: 1595.738522033024
 //City sequence: Aberystwyth -> Inverness -> Nottingham -> Glasgow -> Edinburgh -> London -> Stratford -> Exeter -> Liverpool -> Oxford -> Brighton -> Newcastle
+//Reversed city sequence: Newcastle -> Brighton -> Oxford -> Liverpool -> Exeter -> Stratford -> London -> Edinburgh -> Glasgow -> Nottingham -> Inverness -> Aberystwyth
