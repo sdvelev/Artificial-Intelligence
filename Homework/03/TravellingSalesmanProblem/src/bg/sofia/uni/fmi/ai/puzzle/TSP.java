@@ -10,7 +10,7 @@ public class TSP {
     private final static int MAX_EPOCHS_COEFFICIENT = 16;
     private final static int NUMBER_OF_MIDDLE_EPOCHS_TO_PRINT = 8;
     private final static double ROUTES_IN_ALGORITHM_COEFFICIENT = 0.5;
-    private final static int MUTATE_POSSIBILITIES_INDEX = 5;
+    private final static int MUTATION_PROBABILITY_INDEX = 5;
     private final static int MUTATION_SWAP_TWO_CITIES_IN_ROUTE_INDEX = 0;
     private final static int MUTATION_INSERT_CITY_BETWEEN_TWO_CITIES_INDEX = 1;
     private final static int MUTATION_REVERSE_CITIES_IN_INTERVAL_INDEX = 2;
@@ -26,7 +26,6 @@ public class TSP {
     public TSP(int numberOfCities) {
         this.numberOfCities = numberOfCities;
         this.numberOfRoutesInAlgorithm = (int) (ROUTES_IN_ALGORITHM_COEFFICIENT * numberOfCities);
-
         if (numberOfRoutesInAlgorithm % 2 != 0) {
             --numberOfRoutesInAlgorithm;
         }
@@ -38,7 +37,6 @@ public class TSP {
     public TSP(int numberOfCities, List<City> currentEpochRoute) {
         this.numberOfCities = numberOfCities;
         this.numberOfRoutesInAlgorithm = (int) (ROUTES_IN_ALGORITHM_COEFFICIENT * numberOfCities);
-
         if (numberOfRoutesInAlgorithm % 2 != 0) {
             --numberOfRoutesInAlgorithm;
         }
@@ -47,20 +45,17 @@ public class TSP {
         this.maxEpochs = MAX_EPOCHS_COEFFICIENT * numberOfCities;
     }
 
-    public void algorithm() {
-        int equalDistanceCounter = 0;
-        boolean randomSearch = false;
-
+    public void geneticAlgorithm() {
         Route firstShortestRoute = routesCollection.calculateTheShortestRoute();
         System.out.println("In first epoch 0, the route with the shortest distance is with length: "
             + DECIMAL_FORMAT_ROUND_TWELVE.format(firstShortestRoute.getTotalDistanceBetweenCities()) + " City sequence: "
             + firstShortestRoute.getNameOfCitiesInRoute());
 
-        List<Integer> indexesOfEpochsToPrint = generateIndexesOfEpochsToPrint(maxEpochs);
-
+        int equalShortestPathEpochsCounter = 0;
+        boolean isRandom = false;
+        List<Integer> indexesOfEpochsToPrint = chooseIndexesOfEpochsToBePrinted();
         for (int indexOfEpoch = 1; indexOfEpoch < maxEpochs - 1; indexOfEpoch++) {
             Route currentlyShortestRouteBeforeChildren = routesCollection.calculateTheShortestRoute();
-
             if (indexesOfEpochsToPrint.contains(indexOfEpoch)) {
                 System.out.println("In epoch " + indexOfEpoch + ", the route with the shortest distance is with length: "
                     + DECIMAL_FORMAT_ROUND_TWELVE.format(currentlyShortestRouteBeforeChildren.getTotalDistanceBetweenCities())
@@ -68,20 +63,18 @@ public class TSP {
                     + currentlyShortestRouteBeforeChildren.getNameOfCitiesInRoute());
             }
 
-            search(randomSearch);
+            reproductionPhase(isRandom);
 
             Route currentlyShortestRouteAfterChildren = routesCollection.calculateTheShortestRoute();
-
             if ((int) currentlyShortestRouteBeforeChildren.getTotalDistanceBetweenCities() ==
                 (int) currentlyShortestRouteAfterChildren.getTotalDistanceBetweenCities()) {
-                ++equalDistanceCounter;
+                ++equalShortestPathEpochsCounter;
             } else {
-                equalDistanceCounter = 0;
+                equalShortestPathEpochsCounter = 0;
             }
 
-            if (equalDistanceCounter > MAX_EPOCHS_COEFFICIENT) {
-                randomSearch = true;
-
+            if (equalShortestPathEpochsCounter > MAX_EPOCHS_COEFFICIENT) {
+                isRandom = true;
                 for (int i = 0;
                      i < ROUTES_TO_MUTATE_IF_SIMILAR_COEFFICIENT * this.routesCollection.getRoutesCollection().size();
                      i++){
@@ -91,7 +84,7 @@ public class TSP {
                     this.routesCollection.getRoutesCollection().set(randomRouteIndex, mutateRandomlyByRoute(randomRute));
                 }
             } else {
-                randomSearch = false;
+                isRandom = false;
             }
         }
 
@@ -99,36 +92,26 @@ public class TSP {
         System.out.println("In last epoch " + (maxEpochs - 1) + ", the route with the shortest distance is with length: "
             + DECIMAL_FORMAT_ROUND_TWELVE.format(finalShortestRoute.getTotalDistanceBetweenCities()) + " City sequence: "
             + finalShortestRoute.getNameOfCitiesInRoute());
-
     }
 
-    private Route mutateRandomlyByRoute(Route routeToMutate) {
-        int mutationProbabilityIndex = RANDOM_GENERATOR.nextInt(MUTATE_POSSIBILITIES_INDEX);
-        int mutationSecondIndex = RANDOM_GENERATOR.nextInt(numberOfCities);
-        int mutationFirstIndex;
-        if (mutationSecondIndex != 0) {
-            mutationFirstIndex = RANDOM_GENERATOR.nextInt(mutationSecondIndex);
-        } else {
-            mutationFirstIndex = 0;
+    private List<Integer> chooseIndexesOfEpochsToBePrinted() {
+        List<Integer> indexesOfEpochsToPrint = new ArrayList<>();
+        for (int i = 0; i < NUMBER_OF_MIDDLE_EPOCHS_TO_PRINT; i++) {
+            int generatedIndexOfEpochToPrint;
+            do {
+                generatedIndexOfEpochToPrint = RANDOM_GENERATOR.nextInt(maxEpochs - 1);
+            } while (indexesOfEpochsToPrint.contains(generatedIndexOfEpochToPrint));
+
+            indexesOfEpochsToPrint.add(generatedIndexOfEpochToPrint);
         }
 
-        if (mutationProbabilityIndex == MUTATION_SWAP_TWO_CITIES_IN_ROUTE_INDEX) {
-            routeToMutate.swapTwoCitiesInRoute(routeToMutate.getCityAtIndex(mutationFirstIndex),
-                routeToMutate.getCityAtIndex(mutationSecondIndex));
-        } else if (mutationProbabilityIndex == MUTATION_INSERT_CITY_BETWEEN_TWO_CITIES_INDEX) {
-            routeToMutate.insertCityBetweenTwoCities(routeToMutate.getCityAtIndex(mutationFirstIndex),
-                mutationSecondIndex);
-        } else if (mutationProbabilityIndex == MUTATION_REVERSE_CITIES_IN_INTERVAL_INDEX) {
-            routeToMutate.reverseCitiesInInterval(mutationFirstIndex, mutationSecondIndex);
-        }
-
-        routeToMutate.calculateTotalDistanceBetweenCities();
-        return routeToMutate;
+        return indexesOfEpochsToPrint;
     }
 
-    private void search(boolean randomSearch) {
-        List<Route> shortestRoutesToCrossOver = !randomSearch ? this.routesCollection.findTheShortestRoutesInCollection()
-            : this.routesCollection.findTheRandomShortestRoutes();
+    private void reproductionPhase(boolean randomSearch) {
+        List<Route> shortestRoutesToCrossOver = !randomSearch
+            ? this.routesCollection.findTheExtremumRoutesInCollection(true)
+            : this.routesCollection.findTheRandomExtremumRoutes(true);
 
         List<Route> newRoutesResultsList = new ArrayList<>();
         for (int i = 0; i < numberOfRoutesInAlgorithm - 1; i += 2) {
@@ -138,26 +121,23 @@ public class TSP {
             mutateRandomlyByRoute(newPairOfRoutesAfterCrossOver.get(0));
             mutateRandomlyByRoute(newPairOfRoutesAfterCrossOver.get(1));
 
-//            newPairOfRoutesAfterCrossOver.get(0).calculateTotalDistanceBetweenCities();
-//            newPairOfRoutesAfterCrossOver.get(1).calculateTotalDistanceBetweenCities();
-
             newRoutesResultsList.add(newPairOfRoutesAfterCrossOver.get(0));
             newRoutesResultsList.add(newPairOfRoutesAfterCrossOver.get(1));
         }
 
-        List<Route> longestRoutesToBeDestroyed = !randomSearch ? this.routesCollection.findTheLongestRoutesInCollection()
-            : this.routesCollection.findTheRandomLongestRoutes();
+        List<Route> longestRoutesToBeDestroyed = !randomSearch
+            ? this.routesCollection.findTheExtremumRoutesInCollection(false)
+            : this.routesCollection.findTheRandomExtremumRoutes(false);
 
         for (int i = 0; i < numberOfRoutesInAlgorithm; i++) {
             Route currentLongestRoute = longestRoutesToBeDestroyed.get(i);
-            int currentLongestRouteIndexInEpoch = routesCollection.getRoutesCollection().indexOf(currentLongestRoute);
-            routesCollection.getRoutesCollection().set(currentLongestRouteIndexInEpoch, newRoutesResultsList.get(i));
+            int currentLongestRouteIndexInPreviousEpoch = routesCollection.getRoutesCollection().indexOf(currentLongestRoute);
+            routesCollection.getRoutesCollection().set(currentLongestRouteIndexInPreviousEpoch, newRoutesResultsList.get(i));
         }
     }
 
     private List<Route> twoPointCrossOver(Route firstRouteBeforeCrossOver, Route secondRouteBeforeCrossOver) {
         List<Route> routesAfterCrossOver = new ArrayList<>();
-
         int leftIndex, rightIndex;
         do {
             rightIndex = RANDOM_GENERATOR.nextInt(numberOfCities);
@@ -178,34 +158,26 @@ public class TSP {
         }
 
         int positionToOccupy = rightIndex + 1;
-//        while (firstRouteAfterCrossOver.containsNull()) {
-            if (rightIndex >= numberOfCities - 1) {
+        if (rightIndex >= numberOfCities - 1) {
+            positionToOccupy = 0;
+            rightIndex = -1;
+        }
+
+        for (int i = rightIndex + 1; firstRouteAfterCrossOver.containsNull(); i++) {
+            if (positionToOccupy == numberOfCities) {
                 positionToOccupy = 0;
-                rightIndex = -1;
             }
 
-            for (int i = rightIndex + 1; firstRouteAfterCrossOver.containsNull() ; i++) {
-                if (positionToOccupy == numberOfCities) {
-                    positionToOccupy = 0;
-                }
-
-                if (!firstRouteAfterCrossOver.containsCity(secondRouteBeforeCrossOver.getCityAtIndex(i))) {
-                    firstRouteAfterCrossOver.setCityAtIndex(positionToOccupy++, secondRouteBeforeCrossOver.getCityAtIndex(i));
-                }
-
-                if (i == numberOfCities - 1) {
-                    i = -1;
-                }
+            if (!firstRouteAfterCrossOver.containsCity(secondRouteBeforeCrossOver.getCityAtIndex(i))) {
+                firstRouteAfterCrossOver.setCityAtIndex(positionToOccupy++, secondRouteBeforeCrossOver.getCityAtIndex(i));
             }
-//        }
+
+            if (i == numberOfCities - 1) {
+                i = -1;
+            }
+        }
 
         positionToOccupy = rightIndex + 1;
-//        while (firstRouteAfterCrossOver.containsNull()) {
-//        if (rightIndex >= numberOfCities) {
-//            positionToOccupy = 0;
-//            rightIndex = -1;
-//        }
-
         for (int i = rightIndex + 1; secondRouteAfterCrossOver.containsNull() ; i++) {
             if (positionToOccupy == numberOfCities) {
                 positionToOccupy = 0;
@@ -219,27 +191,55 @@ public class TSP {
                 i = -1;
             }
         }
-//        }
 
         routesAfterCrossOver.add(firstRouteAfterCrossOver);
         routesAfterCrossOver.add(secondRouteAfterCrossOver);
         return routesAfterCrossOver;
     }
 
-    private List<Integer> generateIndexesOfEpochsToPrint(int maxEpochs) {
-        List<Integer> indexesOfEpochsToPrint = new ArrayList<>();
+    private Route mutateRandomlyByRoute(Route routeToMutate) {
+        int mutationProbabilityIndex = RANDOM_GENERATOR.nextInt(MUTATION_PROBABILITY_INDEX);
 
-        for (int i = 0; i < NUMBER_OF_MIDDLE_EPOCHS_TO_PRINT; i++) {
-            int generatedIndexOfEpochToPrint;
-
+        boolean mutationResult;
+        if (mutationProbabilityIndex == MUTATION_SWAP_TWO_CITIES_IN_ROUTE_INDEX) {
             do {
-                generatedIndexOfEpochToPrint = RANDOM_GENERATOR.nextInt(maxEpochs - 1);
-            } while (indexesOfEpochsToPrint.contains(generatedIndexOfEpochToPrint));
-
-            indexesOfEpochsToPrint.add(generatedIndexOfEpochToPrint);
+                List<Integer> mutationIndexes = generateMutationIndexes();
+                int mutationFirstIndex = mutationIndexes.get(0);
+                int mutationSecondIndex = mutationIndexes.get(1);
+                mutationResult = routeToMutate.swapTwoCitiesInRoute(routeToMutate.getCityAtIndex(mutationFirstIndex),
+                    routeToMutate.getCityAtIndex(mutationSecondIndex));
+            } while (!mutationResult);
+        } else if (mutationProbabilityIndex == MUTATION_INSERT_CITY_BETWEEN_TWO_CITIES_INDEX) {
+            do {
+                List<Integer> mutationIndexes = generateMutationIndexes();
+                int mutationFirstIndex = mutationIndexes.get(0);
+                int mutationSecondIndex = mutationIndexes.get(1);
+                mutationResult = routeToMutate.insertCityBetweenTwoCities(routeToMutate.getCityAtIndex(mutationFirstIndex),
+                    mutationSecondIndex);
+            } while (!mutationResult);
+        } else if (mutationProbabilityIndex == MUTATION_REVERSE_CITIES_IN_INTERVAL_INDEX) {
+            do {
+                List<Integer> mutationIndexes = generateMutationIndexes();
+                int mutationFirstIndex = mutationIndexes.get(0);
+                int mutationSecondIndex = mutationIndexes.get(1);
+                mutationResult = routeToMutate.reverseCitiesInInterval(mutationFirstIndex, mutationSecondIndex);
+            } while (!mutationResult);
         }
 
-        return indexesOfEpochsToPrint;
+        routeToMutate.calculateTotalDistanceBetweenCities();
+        return routeToMutate;
+    }
+
+    private List<Integer> generateMutationIndexes() {
+        int mutationSecondIndex = RANDOM_GENERATOR.nextInt(numberOfCities);
+        int mutationFirstIndex;
+        if (mutationSecondIndex != 0) {
+            mutationFirstIndex = RANDOM_GENERATOR.nextInt(mutationSecondIndex);
+        } else {
+            mutationFirstIndex = 0;
+        }
+
+        return List.of(mutationFirstIndex, mutationSecondIndex);
     }
 
     public static void main(String[] args) {
@@ -255,11 +255,10 @@ public class TSP {
         }
 
         TSP puzzle = new TSP(numberOfCities, ukCities);
-        puzzle.algorithm();
+        puzzle.geneticAlgorithm();
         scanner.close();
     }
 }
-
 //Input for UK Cities:
 
 //12
