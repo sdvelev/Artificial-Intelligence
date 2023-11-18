@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class Route {
+    private final static String ARROW_STRING = " -> ";
+    private final static int ARROW_STRING_SIZE = 4;
+    private final static String EMPTY_STRING = "";
+
     private final int numberOfCities;
     private List<City> citiesInRouteList;
     private double totalDistanceBetweenCities;
@@ -67,15 +71,15 @@ public class Route {
         StringBuilder citiesName = new StringBuilder();
         for (City currentCity : this.citiesInRouteList) {
             if (currentCity.cityName().isBlank()) {
-                return "";
+                return EMPTY_STRING;
             }
 
             citiesName.append(currentCity.cityName());
-            citiesName.append(" -> ");
+            citiesName.append(ARROW_STRING);
         }
 
-        for (int i = 0; i < 4; i++) {
-            citiesName.deleteCharAt(citiesName.length() -1);
+        for (int i = 0; i < ARROW_STRING_SIZE; i++) {
+            citiesName.deleteCharAt(citiesName.length() - 1);
         }
 
         return citiesName.toString();

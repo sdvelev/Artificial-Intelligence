@@ -8,7 +8,7 @@ import java.util.Queue;
 import java.util.Random;
 
 public class RoutesCollection {
-    private final static int NUMBER_OF_ROUTES_COEFFICIENT = 16;
+    private final static int NUMBER_OF_ROUTES_COEFFICIENT = 18;
     private final static int MAX_COORDINATES_SCOPE = 600;
     private final static double ROUTES_IN_ALGORITHM_COEFFICIENT = 0.5;
     private final static Random RANDOM_GENERATOR = new Random();
@@ -100,7 +100,6 @@ public class RoutesCollection {
 
     private List<Route> generateFirstPopulation() {
         List<Route> firstPopulationList = new ArrayList<>();
-
         for (int i = 0; i < totalNumberOfRoutes; i++) {
             Route routeToGenerate;
             do {

@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class TSP {
-    private final static int MAX_EPOCHS_COEFFICIENT = 16;
+    private final static int MAX_EPOCHS_COEFFICIENT = 18;
     private final static int NUMBER_OF_MIDDLE_EPOCHS_TO_PRINT = 8;
     private final static double ROUTES_IN_ALGORITHM_COEFFICIENT = 0.5;
     private final static int MUTATION_PROBABILITY_INDEX = 5;
@@ -76,7 +76,7 @@ public class TSP {
             if (equalShortestPathEpochsCounter > MAX_EPOCHS_COEFFICIENT) {
                 isRandom = true;
                 for (int i = 0;
-                     i < ROUTES_TO_MUTATE_IF_SIMILAR_COEFFICIENT * this.routesCollection.getRoutesCollection().size();
+                     i < (int) (ROUTES_TO_MUTATE_IF_SIMILAR_COEFFICIENT * this.routesCollection.getRoutesCollection().size());
                      i++){
                     int randomRouteIndex = RANDOM_GENERATOR.nextInt(MAX_EPOCHS_COEFFICIENT * numberOfCities);
                     Route randomRute = this.routesCollection.getRoutesCollection().get(randomRouteIndex);
