@@ -38,7 +38,7 @@ public class TicTacToe {
     }
 
     public void algorithm() {
-        if (this.computerRoleInAlgorithm == MAX_PLAYER_ROUND) {
+        if (computerRoleInAlgorithm == MAX_PLAYER_ROUND) {
             computerRound();
         }
 
@@ -137,24 +137,24 @@ public class TicTacToe {
                 evaluateValue = EMPTY_CELL;
             }
 
-            return List.of(evaluateValue, 0, 0, currentDepth);
+            return List.of(evaluateValue, EMPTY_CELL, EMPTY_CELL, currentDepth);
         }
 
         List<Integer> soFarBestConfiguration;
         if (currentPlayer == MAX_PLAYER_ROUND) {
-            soFarBestConfiguration = List.of(Integer.MIN_VALUE, 0, 0, currentDepth);
+            soFarBestConfiguration = List.of(Integer.MIN_VALUE, EMPTY_CELL, EMPTY_CELL, currentDepth);
         } else {
-            soFarBestConfiguration = List.of(Integer.MAX_VALUE, 0, 0 ,currentDepth);
+            soFarBestConfiguration = List.of(Integer.MAX_VALUE, EMPTY_CELL, EMPTY_CELL ,currentDepth);
         }
 
         outerLoop:
         for (int i = 0; i < ROWS_NUMBER; i++) {
             for (int j = 0; j < COLS_NUMBER; j++) {
-                if (this.gameBoard[i][j] == EMPTY_CELL) {
-                    this.gameBoard[i][j] = currentPlayer;
+                if (gameBoard[i][j] == EMPTY_CELL) {
+                    gameBoard[i][j] = currentPlayer;
                     List<Integer> currentResultConfiguration = alphaBetaDecision(currentDepth + 1,
                         -currentPlayer, alpha, beta);
-                    this.gameBoard[i][j] = EMPTY_CELL;
+                    gameBoard[i][j] = EMPTY_CELL;
 
                     int resultMove = currentResultConfiguration.get(0);
                     int resultDepth = currentResultConfiguration.get(3);
@@ -210,7 +210,7 @@ public class TicTacToe {
     private int isThereRowWinner() {
         Set<Integer> storedValue = new HashSet<>();
         for (int i = 0; i < ROWS_NUMBER; i++) {
-            if (this.gameBoard[i][0] == this.gameBoard[i][1] && this.gameBoard[i][1] == this.gameBoard[i][2]) {
+            if (gameBoard[i][0] == gameBoard[i][1] && gameBoard[i][1] == gameBoard[i][2]) {
                 storedValue.add(gameBoard[i][0]);
             }
         }
@@ -226,7 +226,7 @@ public class TicTacToe {
     private int isThereColWinner() {
         Set<Integer> storedValue = new HashSet<>();
         for (int i = 0; i < ROWS_NUMBER; i++) {
-            if (this.gameBoard[0][i] == this.gameBoard[1][i] && this.gameBoard[1][i] == this.gameBoard[2][i]) {
+            if (gameBoard[0][i] == gameBoard[1][i] && gameBoard[1][i] == gameBoard[2][i]) {
                 storedValue.add(gameBoard[0][i]);
             }
         }
@@ -241,11 +241,11 @@ public class TicTacToe {
 
     private int isThereDiagonalWinner() {
         Set<Integer> storedValue = new HashSet<>();
-        if (this.gameBoard[0][0] == this.gameBoard[1][1] && this.gameBoard[1][1] == this.gameBoard[2][2]) {
+        if (gameBoard[0][0] == gameBoard[1][1] && gameBoard[1][1] == gameBoard[2][2]) {
             storedValue.add(gameBoard[0][0]);
         }
 
-        if (this.gameBoard[0][2] == this.gameBoard[1][1] && this.gameBoard[1][1] == this.gameBoard[2][0]) {
+        if (gameBoard[0][2] == gameBoard[1][1] && gameBoard[1][1] == gameBoard[2][0]) {
             storedValue.add(gameBoard[0][2]);
         }
 
@@ -258,7 +258,8 @@ public class TicTacToe {
     }
 
     public static void main(String[] args) {
-        System.out.println("You are playing Tic-Tac-Toe against algorithm.");
+        System.out.println("You are playing Tic-Tac-Toe against algorithm. You play with " + PLAYER_SIGN_ON_GAME_BOARD +
+            " and the computer plays with " + COMPUTER_SIGN_ON_GAME_BOARD + ".");
         System.out.println("Who will start first - you or the computer? Type \"i\" for you and \"c\" for the computer");
         char firstPlayer = SCANNER.next().charAt(0);
 
