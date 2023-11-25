@@ -258,9 +258,9 @@ public class TicTacToe {
     }
 
     public static void main(String[] args) {
-        System.out.println("You are playing Tic-Tac-Toe against algorithm. You play with " + PLAYER_SIGN_ON_GAME_BOARD +
-            " and the computer plays with " + COMPUTER_SIGN_ON_GAME_BOARD + ".");
-        System.out.println("Who will start first - you or the computer? Type \"i\" for you and \"c\" for the computer");
+        System.out.println("You are playing Tic-Tac-Toe against an algorithm. You play with \"" + PLAYER_SIGN_ON_GAME_BOARD +
+            "\" and the computer plays with \"" + COMPUTER_SIGN_ON_GAME_BOARD + "\".");
+        System.out.println("Who will start first - you or the computer? Type \"i\" for you and \"c\" for the computer:");
         char firstPlayer = SCANNER.next().charAt(0);
 
         TicTacToe ticTacToe = new TicTacToe(firstPlayer);
