@@ -107,5 +107,4 @@ public record Voter(String party,
             mxMissile, immigration, synfuelsCorporationCutback, educationSpending, superfundRightToSue, crime,
             dutyFreeExports, exportAdministrationActSouthAfrica);
     }
-
 }
