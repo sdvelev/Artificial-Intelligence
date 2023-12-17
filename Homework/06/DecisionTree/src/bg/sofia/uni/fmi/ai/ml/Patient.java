@@ -26,7 +26,7 @@ public record Patient(String recurrenceEvents,
     private static final String CONTENT_ATTRIBUTE_DELIMITER = ",";
     private static final String EMPTY_STRING = "";
 
-    public String getNumberedFeature(short numberOfFeature) {
+    public String getNumberedFeature(int numberOfFeature) {
         return switch (numberOfFeature) {
             case RECURRENCE_EVENTS_POSITION -> this.recurrenceEvents;
             case AGE_POSITION -> this.age;
