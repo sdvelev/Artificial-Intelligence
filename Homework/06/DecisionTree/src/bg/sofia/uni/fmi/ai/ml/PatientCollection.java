@@ -49,7 +49,7 @@ public class PatientCollection {
 
         for (int i = 0; i < numberOfPatients; i++) {
             Patient currentPatient = patientCollectionList.get(i);
-            for (short j = 0; j < NUMBER_OF_ATTRIBUTES_IN_PATIENT; j++) {
+            for (short j = 1; j < NUMBER_OF_ATTRIBUTES_IN_PATIENT; j++) {
                 patientAttributeValuesList.get(j).add(currentPatient.getNumberedFeature(j));
             }
         }
@@ -148,7 +148,7 @@ public class PatientCollection {
 
     public int findBestDecisionAttribute(Set<Integer> visitedFeaturePositionsSet) {
         double maxInformationGain = Double.MIN_VALUE;
-        int attributeWithMaxInformationGainPosition = 0;
+        int attributeWithMaxInformationGainPosition = 1;
 
         for (int i = 1; i < NUMBER_OF_ATTRIBUTES_IN_PATIENT && !visitedFeaturePositionsSet.contains(i); i++) {
             double currentAttributeInformationGain = calculateInformationGain(i);
@@ -173,19 +173,32 @@ public class PatientCollection {
         return new PatientCollection(foundPatientsList);
     }
 
-    public String findRecurrenceTargetPrevalence(TreeNode treeNode) {
-        if (numberOfRecurrenceTarget > numberOfNoRecurrenceTarget) {
-            return RECURRENCE_EVENT_STRING;
-        } else if (numberOfNoRecurrenceTarget > numberOfRecurrenceTarget) {
-            return NO_RECURRENCE_EVENT_STRING;
+//    public String findRecurrenceTargetPrevalence(TreeNode treeNode) {
+//        if (numberOfRecurrenceTarget > numberOfNoRecurrenceTarget) {
+//            return RECURRENCE_EVENT_STRING;
+//        } else if (numberOfNoRecurrenceTarget > numberOfRecurrenceTarget) {
+//            return NO_RECURRENCE_EVENT_STRING;
+//        }
+//
+//        TreeNode parentTreeNode = treeNode.getParentTreeNode();
+//        if (parentTreeNode.isRecurrenceEvent()) {
+//            return RECURRENCE_EVENT_STRING;
+//        }
+//        return NO_RECURRENCE_EVENT_STRING;
+//    }
+
+    public boolean findRecurrenceTargetPrevalence(TreeNode treeNode) {
+
+        if (numberOfRecurrenceTarget == numberOfNoRecurrenceTarget) {
+            if (treeNode.getParentTreeNode() != null) {
+                return treeNode.getParentTreeNode().isRecurrenceEvent();
+            }
+            return false;
         }
 
-        TreeNode parentTreeNode = treeNode.getParentTreeNode();
-        if (parentTreeNode.isRecurrenceEvent()) {
-            return RECURRENCE_EVENT_STRING;
-        }
-        return NO_RECURRENCE_EVENT_STRING;
+        return numberOfRecurrenceTarget > numberOfNoRecurrenceTarget;
     }
+
 
     public int getNumberOfNoRecurrenceTarget() {
         return numberOfNoRecurrenceTarget;

@@ -60,20 +60,27 @@ public class Solution {
         updateTotalNumberOfPatientsInEachRecurrence();
 
         PatientCollection patientCollection = new PatientCollection(trainList);
+        List<Patient> allDatalist = new ArrayList<>(trainList);
+        allDatalist.addAll(testList);
+        PatientCollection patientCollectionAllData = new PatientCollection(allDatalist);
         DecisionTreePrePruning decisionTreePrePruning = new DecisionTreePrePruning(patientCollection,
-            patientCollection.getPatientAttributeValuesList());
+            patientCollectionAllData.getPatientAttributeValuesList());
 
         System.out.println(trainList.size());
         System.out.println(testList.size());
 
         for (Patient currentPatient : this.testList) {
             String realValueResult = currentPatient.recurrenceEvents();
-            decisionTreePrePruning.printDecisionTree();
-            String guessedResult = decisionTreePrePruning.findPredictedResultFromDecisionTree(currentPatient);
+            //decisionTreePrePruning.printDecisionTree();
+//            String guessedResult = decisionTreePrePruning.findPredictedResultFromDecisionTree(currentPatient);
 
-            if (realValueResult.equalsIgnoreCase(guessedResult)) {
+            if (decisionTreePrePruning.findPredictedResultFromDecisionTree(currentPatient)) {
                 ++numberOfTrueGuesses;
             }
+
+//            if (realValueResult.equalsIgnoreCase(guessedResult)) {
+//                ++numberOfTrueGuesses;
+//            }
         }
 
         double currentAccuracy = 100.0 * numberOfTrueGuesses / totalInstancesInTestSet;

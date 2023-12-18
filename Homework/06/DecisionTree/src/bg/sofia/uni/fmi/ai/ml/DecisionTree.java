@@ -32,8 +32,7 @@ public abstract class DecisionTree {
         childTreeNode.setRepresentedFeaturePosition(bestAttributePosition);
         childTreeNode.getVisitedFeaturePositionsSet().add(bestAttributePosition);
         childTreeNode.setParentTreeNode(parentTreeNode);
-        childTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(childTreeNode)
-            .equalsIgnoreCase(RECURRENCE_EVENT_STRING));
+        childTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(childTreeNode));
 
         Set<String> currentAttributeValuesSet = patientAttributeValuesList.get(bestAttributePosition);
         for (String currentAttributeValue : currentAttributeValuesSet) {
@@ -46,7 +45,7 @@ public abstract class DecisionTree {
                                                          TreeNode parentTreeNode, PatientCollection patientCollection,
                                                          List<Set<String>> patientAttributeValuesList);
 
-    public String findPredictedResultFromDecisionTree(Patient patientToTest) {
+    public boolean findPredictedResultFromDecisionTree(Patient patientToTest) {
         TreeNode currentTreeNode = this.rootTreeNode;
         while (true) {
             int currentAttributePosition = currentTreeNode.getRepresentedFeaturePosition();
@@ -57,7 +56,18 @@ public abstract class DecisionTree {
                 if (currentChild.getRepresentedFeatureValue().equalsIgnoreCase(currentAttributeValue)) {
                     if (currentChild.isTargetLeafNode()) {
                         // TODO Instead of isRecurrence I return the feature value
-                        return currentChild.getRepresentedFeatureValue();
+
+//                        if (patientToTest.getNumberedFeature(0).equalsIgnoreCase(RECURRENCE_EVENT_STRING)) {
+//                            return currentChild.isRecurrenceEvent();
+//                        }
+//                        return !currentChild.isRecurrenceEvent();
+
+                        if (currentChild.isRecurrenceEvent()) {
+                            return patientToTest.getNumberedFeature(0).equals(RECURRENCE_EVENT_STRING);
+                        } else {
+                            return patientToTest.getNumberedFeature(0).equals(NO_RECURRENCE_EVENT_STRING);
+                        }
+
                     }
 
                     currentTreeNode = currentChild.getChildrenTreeNodesList().get(0);

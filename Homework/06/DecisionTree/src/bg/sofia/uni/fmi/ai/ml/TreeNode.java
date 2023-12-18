@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class TreeNode {
@@ -108,5 +109,24 @@ public class TreeNode {
 
     public void setNumberOfErrorsForPostPruning(int numberOfErrorsForPostPruning) {
         this.numberOfErrorsForPostPruning = numberOfErrorsForPostPruning;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TreeNode treeNode = (TreeNode) o;
+        return representedFeaturePosition == treeNode.representedFeaturePosition &&
+            isRecurrenceEvent == treeNode.isRecurrenceEvent && isTargetLeafNode == treeNode.isTargetLeafNode &&
+            Objects.equals(representedFeatureValue, treeNode.representedFeatureValue) &&
+            Objects.equals(parentTreeNode, treeNode.parentTreeNode) &&
+            Objects.equals(childrenTreeNodesList, treeNode.childrenTreeNodesList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(representedFeaturePosition, representedFeatureValue, isRecurrenceEvent, isTargetLeafNode,
+            parentTreeNode, childrenTreeNodesList);
     }
 }

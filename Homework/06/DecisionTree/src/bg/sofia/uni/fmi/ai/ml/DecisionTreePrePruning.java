@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.ai.ml;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,8 +22,7 @@ public class DecisionTreePrePruning extends DecisionTree {
             leafTreeNode.setRepresentedFeatureValue(attributeValue);
             leafTreeNode.setTargetLeafNode(true);
             leafTreeNode.setParentTreeNode(parentTreeNode);
-            leafTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(leafTreeNode)
-                .equalsIgnoreCase(RECURRENCE_EVENT_STRING));
+            leafTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(leafTreeNode));
             parentTreeNode.getChildrenTreeNodesList().add(leafTreeNode);
             return;
         }
@@ -30,10 +30,9 @@ public class DecisionTreePrePruning extends DecisionTree {
         TreeNode childTreeNode = new TreeNode();
         childTreeNode.setRepresentedFeaturePosition(attributePosition);
         childTreeNode.setRepresentedFeatureValue(attributeValue);
-        childTreeNode.setVisitedFeaturePositionsSet(parentTreeNode.getVisitedFeaturePositionsSet());
+        childTreeNode.setVisitedFeaturePositionsSet(new HashSet<>(parentTreeNode.getVisitedFeaturePositionsSet()));
         childTreeNode.setParentTreeNode(parentTreeNode);
-        childTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(childTreeNode)
-            .equalsIgnoreCase(RECURRENCE_EVENT_STRING));
+        childTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(childTreeNode));
         parentTreeNode.getChildrenTreeNodesList().add(childTreeNode);
         PatientCollection updatedPatientCollection = patientCollection
             .findPatientsWithGivenAttributeValue(attributePosition, attributeValue);
