@@ -199,4 +199,8 @@ public class PatientCollection {
     public List<Set<String>> getPatientPossibleAttributeValuesList() {
         return patientPossibleAttributeValuesList;
     }
+
+    public List<Patient> getPatientCollectionList() {
+        return patientCollectionList;
+    }
 }

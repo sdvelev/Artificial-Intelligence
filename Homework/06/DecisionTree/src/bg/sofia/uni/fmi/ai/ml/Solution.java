@@ -20,7 +20,9 @@ public class Solution {
     private List<Patient> patients;
     private List<Patient> trainList;
     private List<Patient> testList;
+    private List<Patient> validationList;
     private final List<Double> accuraciesListPrePruning;
+    private final List<Double> accuraciesListPostPruning;
     private long totalNumberOfRecurrenceEventsInTrainList;
     private long totalNumberOfNoRecurrenceEventsInTrainList;
 
@@ -35,7 +37,9 @@ public class Solution {
 
         this.trainList = new ArrayList<>();
         this.testList = new ArrayList<>();
+        this.validationList = new ArrayList<>();
         this.accuraciesListPrePruning = new ArrayList<>();
+        this.accuraciesListPostPruning = new ArrayList<>();
     }
 
     private void updateTotalNumberOfPatientsInEachRecurrence() {
@@ -54,6 +58,7 @@ public class Solution {
 
     private void modelDT(int numberOfRound) {
         int numberOfTrueGuessesPrePruning = 0;
+        int numberOfTrueGuessesPostPruning = 0;
         int totalInstancesInTestSet = this.testList.size();
 
         updateTotalNumberOfPatientsInEachRecurrence();
@@ -68,18 +73,44 @@ public class Solution {
         DecisionTreePrePruning decisionTreePrePruning = new DecisionTreePrePruning(patientCollection,
             patientCollectionAllData.getPatientPossibleAttributeValuesList());
 
+
+        List<Patient> newTrainList = new ArrayList<>();
+        for (int i = 0; i < trainList.size(); i++) {
+            if (i % FOLD_CROSS_VALIDATION_COEFFICIENT == 0) {
+                validationList.add(trainList.get(i));
+            } else {
+                newTrainList.add(trainList.get(i));
+            }
+        }
+
+        /*DecisionTreePostPruning decisionTreePostPruning = new DecisionTreePostPruning(new PatientCollection(newTrainList),
+            validationList,
+            patientCollectionAllData.getPatientPossibleAttributeValuesList());*/
+
+
         for (Patient currentPatient : this.testList) {
             if (decisionTreePrePruning.isCorrectPredictedResultByTraversingDecisionTree(currentPatient)) {
                 ++numberOfTrueGuessesPrePruning;
             }
+
+           /* if (decisionTreePostPruning.isCorrectPredictedResultByTraversingDecisionTree(currentPatient)) {
+                ++numberOfTrueGuessesPostPruning;
+            }*/
         }
 
         double currentAccuracyPrePruning = 100.0 * numberOfTrueGuessesPrePruning / totalInstancesInTestSet;
         accuraciesListPrePruning.add(currentAccuracyPrePruning);
 
-        System.out.println("Accuracy of decision tree with prepruning on round " + numberOfRound + " is " +
+        double currentAccuracyPostPruning = 100.0 * numberOfTrueGuessesPostPruning / totalInstancesInTestSet;
+        accuraciesListPostPruning.add(currentAccuracyPostPruning);
+
+        System.out.println("Accuracy of decision tree on round " + numberOfRound + " is " +
             DECIMAL_FORMAT_ROUND_TWO.format(currentAccuracyPrePruning) + "% Successfully guessed: " +
             numberOfTrueGuessesPrePruning + "/" + totalInstancesInTestSet);
+
+        /*System.out.println("Accuracy of decision tree with postpruning on round " + numberOfRound + " is " +
+            DECIMAL_FORMAT_ROUND_TWO.format(currentAccuracyPostPruning) + "% Successfully guessed: " +
+            numberOfTrueGuessesPostPruning + "/" + totalInstancesInTestSet);*/
     }
 
     public void foldCrossValidation() {
@@ -104,15 +135,24 @@ public class Solution {
             modelDT(i + 1);
         }
 
-        double sumOfAccuracies = 0;
+        double sumOfAccuraciesPrePruning = 0;
+        double sumOfAccuraciesPostPruning = 0;
+
         int numberOfAccuraciesInList = accuraciesListPrePruning.size();
 
         for (double currentAccuracy : accuraciesListPrePruning) {
-            sumOfAccuracies += currentAccuracy;
+            sumOfAccuraciesPrePruning += currentAccuracy;
         }
 
-        System.out.println("Final average accuracy of decision tree with prepruning is: " +
-            DECIMAL_FORMAT_ROUND_TWO.format(sumOfAccuracies / numberOfAccuraciesInList) + "%");
+        for (double currentAccuracy : accuraciesListPostPruning) {
+            sumOfAccuraciesPostPruning += currentAccuracy;
+        }
+
+        System.out.println("Final average accuracy of decision tree technique is: " +
+            DECIMAL_FORMAT_ROUND_TWO.format(sumOfAccuraciesPrePruning / numberOfAccuraciesInList) + "%");
+
+        /*System.out.println("Final average accuracy of decision tree with postpruning is: " +
+            DECIMAL_FORMAT_ROUND_TWO.format(sumOfAccuraciesPostPruning / numberOfAccuraciesInList) + "%");*/
     }
 
     public static void main(String[] args) throws IOException {

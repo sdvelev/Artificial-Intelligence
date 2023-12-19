@@ -104,8 +104,8 @@ public class TreeNode {
         return numberOfErrorsForPostPruning;
     }
 
-    public void setNumberOfErrorsForPostPruning(int numberOfErrorsForPostPruning) {
-        this.numberOfErrorsForPostPruning = numberOfErrorsForPostPruning;
+    public void incrementNumberOfErrorsForPostPruning() {
+        ++numberOfErrorsForPostPruning;
     }
 
     @Override

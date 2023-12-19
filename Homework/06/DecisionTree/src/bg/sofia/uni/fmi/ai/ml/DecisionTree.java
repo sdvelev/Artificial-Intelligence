@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.ai.ml;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +32,7 @@ public abstract class DecisionTree {
         childTreeNode.setParentTreeNode(parentTreeNode);
         childTreeNode.setRecurrenceEvent(patientCollection.isRecurrenceTargetPrevalence(childTreeNode));
 
-        Set<String> currentAttributeValuesSet = patientAttributeValuesList.get(bestAttributePosition);
+        Set<String> currentAttributeValuesSet =  patientAttributeValuesList.get(bestAttributePosition);
         for (String currentAttributeValue : currentAttributeValuesSet) {
             constructAttributeValueTreeNode(bestAttributePosition, currentAttributeValue, childTreeNode,
                 patientCollection, patientAttributeValuesList);
@@ -72,5 +73,9 @@ public abstract class DecisionTree {
             patientCollection.getNumberOfNoRecurrenceTarget()),0);
 
         return compareResult == 0;
+    }
+
+    protected TreeNode getRootTreeNode() {
+        return rootTreeNode;
     }
 }
