@@ -17,14 +17,12 @@ public class Solution {
     private final static String NO_RECURRENCE_EVENT_STRING = "no-recurrence-events";
     private final static DecimalFormat DECIMAL_FORMAT_ROUND_TWO = new DecimalFormat("0.00");
 
-
     private List<Patient> patients;
     private List<Patient> trainList;
     private List<Patient> testList;
-    private final List<Double> accuraciesList;
+    private final List<Double> accuraciesListPrePruning;
     private long totalNumberOfRecurrenceEventsInTrainList;
     private long totalNumberOfNoRecurrenceEventsInTrainList;
-
 
     public Solution(Reader reader) {
         try (BufferedReader bufferedReader = new BufferedReader(reader)) {
@@ -37,11 +35,7 @@ public class Solution {
 
         this.trainList = new ArrayList<>();
         this.testList = new ArrayList<>();
-        this.accuraciesList = new ArrayList<>();
-    }
-
-    private long getNumberOfPatients() {
-        return this.patients.size();
+        this.accuraciesListPrePruning = new ArrayList<>();
     }
 
     private void updateTotalNumberOfPatientsInEachRecurrence() {
@@ -54,40 +48,38 @@ public class Solution {
             .count();
     }
 
+    private long getNumberOfPatients() {
+        return this.patients.size();
+    }
+
     private void modelDT(int numberOfRound) {
-        int numberOfTrueGuesses = 0;
+        int numberOfTrueGuessesPrePruning = 0;
         int totalInstancesInTestSet = this.testList.size();
+
         updateTotalNumberOfPatientsInEachRecurrence();
 
         PatientCollection patientCollection = new PatientCollection(trainList);
+
         List<Patient> allDatalist = new ArrayList<>(trainList);
         allDatalist.addAll(testList);
-        PatientCollection patientCollectionAllData = new PatientCollection(allDatalist);
-        DecisionTreePrePruning decisionTreePrePruning = new DecisionTreePrePruning(patientCollection,
-            patientCollectionAllData.getPatientAttributeValuesList());
 
-        System.out.println(trainList.size());
-        System.out.println(testList.size());
+        PatientCollection patientCollectionAllData = new PatientCollection(allDatalist);
+
+        DecisionTreePrePruning decisionTreePrePruning = new DecisionTreePrePruning(patientCollection,
+            patientCollectionAllData.getPatientPossibleAttributeValuesList());
 
         for (Patient currentPatient : this.testList) {
-            String realValueResult = currentPatient.recurrenceEvents();
-            //decisionTreePrePruning.printDecisionTree();
-//            String guessedResult = decisionTreePrePruning.findPredictedResultFromDecisionTree(currentPatient);
-
-            if (decisionTreePrePruning.findPredictedResultFromDecisionTree(currentPatient)) {
-                ++numberOfTrueGuesses;
+            if (decisionTreePrePruning.isCorrectPredictedResultByTraversingDecisionTree(currentPatient)) {
+                ++numberOfTrueGuessesPrePruning;
             }
-
-//            if (realValueResult.equalsIgnoreCase(guessedResult)) {
-//                ++numberOfTrueGuesses;
-//            }
         }
 
-        double currentAccuracy = 100.0 * numberOfTrueGuesses / totalInstancesInTestSet;
-        accuraciesList.add(currentAccuracy);
+        double currentAccuracyPrePruning = 100.0 * numberOfTrueGuessesPrePruning / totalInstancesInTestSet;
+        accuraciesListPrePruning.add(currentAccuracyPrePruning);
 
-        System.out.println("Accuracy on round " + numberOfRound + " is " + DECIMAL_FORMAT_ROUND_TWO.format(currentAccuracy)
-            + "% Successfully guessed: " + numberOfTrueGuesses + "/" + totalInstancesInTestSet);
+        System.out.println("Accuracy of decision tree with prepruning on round " + numberOfRound + " is " +
+            DECIMAL_FORMAT_ROUND_TWO.format(currentAccuracyPrePruning) + "% Successfully guessed: " +
+            numberOfTrueGuessesPrePruning + "/" + totalInstancesInTestSet);
     }
 
     public void foldCrossValidation() {
@@ -113,13 +105,13 @@ public class Solution {
         }
 
         double sumOfAccuracies = 0;
-        int numberOfAccuraciesInList = accuraciesList.size();
+        int numberOfAccuraciesInList = accuraciesListPrePruning.size();
 
-        for (double currentAccuracy : accuraciesList) {
+        for (double currentAccuracy : accuraciesListPrePruning) {
             sumOfAccuracies += currentAccuracy;
         }
 
-        System.out.println("Final average accuracy is: " +
+        System.out.println("Final average accuracy of decision tree with prepruning is: " +
             DECIMAL_FORMAT_ROUND_TWO.format(sumOfAccuracies / numberOfAccuraciesInList) + "%");
     }
 

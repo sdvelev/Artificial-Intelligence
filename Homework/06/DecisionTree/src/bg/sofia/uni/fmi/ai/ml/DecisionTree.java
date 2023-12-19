@@ -1,19 +1,15 @@
 package bg.sofia.uni.fmi.ai.ml;
 
-import com.sun.source.tree.Tree;
-
-import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 
 public abstract class DecisionTree {
     protected final static String RECURRENCE_EVENT_STRING = "recurrence-events";
-    private final static String NO_RECURRENCE_EVENT_STRING = "no-recurrence-events";
+    protected final static String NO_RECURRENCE_EVENT_STRING = "no-recurrence-events";
 
     private TreeNode rootTreeNode = new TreeNode();
 
-    protected void constructAttributeTreeNode(PatientCollection patientCollection, TreeNode parentTreeNode,
+    public void constructAttributeTreeNode(PatientCollection patientCollection, TreeNode parentTreeNode,
                                             List<Set<String>> patientAttributeValuesList) {
         TreeNode childTreeNode;
 
@@ -31,8 +27,9 @@ public abstract class DecisionTree {
 
         childTreeNode.setRepresentedFeaturePosition(bestAttributePosition);
         childTreeNode.getVisitedFeaturePositionsSet().add(bestAttributePosition);
+
         childTreeNode.setParentTreeNode(parentTreeNode);
-        childTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(childTreeNode));
+        childTreeNode.setRecurrenceEvent(patientCollection.isRecurrenceTargetPrevalence(childTreeNode));
 
         Set<String> currentAttributeValuesSet = patientAttributeValuesList.get(bestAttributePosition);
         for (String currentAttributeValue : currentAttributeValuesSet) {
@@ -45,8 +42,9 @@ public abstract class DecisionTree {
                                                          TreeNode parentTreeNode, PatientCollection patientCollection,
                                                          List<Set<String>> patientAttributeValuesList);
 
-    public boolean findPredictedResultFromDecisionTree(Patient patientToTest) {
+    public boolean isCorrectPredictedResultByTraversingDecisionTree(Patient patientToTest) {
         TreeNode currentTreeNode = this.rootTreeNode;
+
         while (true) {
             int currentAttributePosition = currentTreeNode.getRepresentedFeaturePosition();
             String currentAttributeValue = patientToTest.getNumberedFeature(currentAttributePosition);
@@ -55,26 +53,17 @@ public abstract class DecisionTree {
                 TreeNode currentChild = currentTreeNode.getChildrenTreeNodesList().get(i);
                 if (currentChild.getRepresentedFeatureValue().equalsIgnoreCase(currentAttributeValue)) {
                     if (currentChild.isTargetLeafNode()) {
-                        // TODO Instead of isRecurrence I return the feature value
-
-//                        if (patientToTest.getNumberedFeature(0).equalsIgnoreCase(RECURRENCE_EVENT_STRING)) {
-//                            return currentChild.isRecurrenceEvent();
-//                        }
-//                        return !currentChild.isRecurrenceEvent();
-
                         if (currentChild.isRecurrenceEvent()) {
                             return patientToTest.getNumberedFeature(0).equals(RECURRENCE_EVENT_STRING);
                         } else {
                             return patientToTest.getNumberedFeature(0).equals(NO_RECURRENCE_EVENT_STRING);
                         }
-
                     }
 
                     currentTreeNode = currentChild.getChildrenTreeNodesList().get(0);
                     break;
                 }
             }
-
         }
     }
 
@@ -84,26 +73,4 @@ public abstract class DecisionTree {
 
         return compareResult == 0;
     }
-
-    public void printDecisionTree() {
-        Queue<TreeNode> queue = new ArrayDeque<>();
-        queue.add(rootTreeNode);
-        TreeNode currentNode;
-
-        while (!queue.isEmpty()) {
-            currentNode = queue.element();
-            queue.remove();
-            System.out.println("Node: " + currentNode.getRepresentedFeatureValue());
-            if (currentNode.isTargetLeafNode()) {
-                System.out.println("Leaf: " + currentNode.isRecurrenceEvent());
-            }
-
-            for (int i = 0; i < currentNode.getChildrenTreeNodesList().size(); i++) {
-                queue.add(currentNode.getChildrenTreeNodesList().get(i));
-            }
-        }
-    }
-
-
-
 }

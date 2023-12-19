@@ -15,10 +15,9 @@ public class PatientCollection {
     private final static int NO_RECURRENCE_EVENT_INDEX = 0;
     private final static int LOG_TWO_BASE = 2;
 
-
     private List<Patient> patientCollectionList;
-    private List<Set<String>> patientAttributeValuesList;
-    private List<List<Map<String, Integer>>> featureValuesOccurrence;
+    private List<Set<String>> patientPossibleAttributeValuesList;
+    private List<List<Map<String, Integer>>> featureValuesOccurrenceNumberList;
     int numberOfNoRecurrenceTarget;
     int numberOfRecurrenceTarget;
     int numberOfPatients;
@@ -28,8 +27,8 @@ public class PatientCollection {
         this.numberOfRecurrenceTarget = 0;
         this.numberOfNoRecurrenceTarget = 0;
         this.patientCollectionList = new ArrayList<>();
-        this.patientAttributeValuesList = new ArrayList<>();
-        this.featureValuesOccurrence = new ArrayList<>();
+        this.patientPossibleAttributeValuesList = new ArrayList<>();
+        this.featureValuesOccurrenceNumberList = new ArrayList<>();
     }
 
     public PatientCollection(List<Patient> patientsList) {
@@ -37,8 +36,8 @@ public class PatientCollection {
         this.numberOfRecurrenceTarget = 0;
         this.numberOfNoRecurrenceTarget = 0;
         this.patientCollectionList = patientsList;
-        this.patientAttributeValuesList = updateAttributeValuesList();
-        this.featureValuesOccurrence = updateFeatureValuesOccurrence();
+        this.patientPossibleAttributeValuesList = updateAttributeValuesList();
+        this.featureValuesOccurrenceNumberList = updateFeatureValuesOccurrence();
     }
 
     private List<Set<String>> updateAttributeValuesList() {
@@ -49,6 +48,7 @@ public class PatientCollection {
 
         for (int i = 0; i < numberOfPatients; i++) {
             Patient currentPatient = patientCollectionList.get(i);
+
             for (short j = 1; j < NUMBER_OF_ATTRIBUTES_IN_PATIENT; j++) {
                 patientAttributeValuesList.get(j).add(currentPatient.getNumberedFeature(j));
             }
@@ -69,13 +69,11 @@ public class PatientCollection {
 
         for (int i = 0; i < numberOfPatients; i++) {
             Patient currentPatient = patientCollectionList.get(i);
+
             if (currentPatient.recurrenceEvents().equalsIgnoreCase(RECURRENCE_EVENT_STRING)) {
                 ++numberOfRecurrenceTarget;
-                for (short j = 0; j < NUMBER_OF_ATTRIBUTES_IN_PATIENT; j++) {
-//                    featureValuesOccurrence.get(RECURRENCE_EVENT_INDEX).get(j)
-//                        .putIfAbsent(currentPatient.getNumberedFeature(j),
-//                            featureValuesOccurrence.get(RECURRENCE_EVENT_INDEX).get(j)
-//                                .get(currentPatient.getNumberedFeature(j)));
+
+                for (int j = 0; j < NUMBER_OF_ATTRIBUTES_IN_PATIENT; j++) {
                     featureValuesOccurrence.get(RECURRENCE_EVENT_INDEX).get(j)
                             .putIfAbsent(currentPatient.getNumberedFeature(j), 0);
                     featureValuesOccurrence.get(RECURRENCE_EVENT_INDEX).get(j)
@@ -83,7 +81,8 @@ public class PatientCollection {
                 }
             } else if (currentPatient.recurrenceEvents().equalsIgnoreCase(NO_RECURRENCE_EVENT_STRING)) {
                 ++numberOfNoRecurrenceTarget;
-                for (short j = 0; j < NUMBER_OF_ATTRIBUTES_IN_PATIENT; j++) {
+
+                for (int j = 0; j < NUMBER_OF_ATTRIBUTES_IN_PATIENT; j++) {
                     featureValuesOccurrence.get(NO_RECURRENCE_EVENT_INDEX).get(j)
                         .putIfAbsent(currentPatient.getNumberedFeature(j), 0);
                     featureValuesOccurrence.get(NO_RECURRENCE_EVENT_INDEX).get(j)
@@ -93,6 +92,11 @@ public class PatientCollection {
         }
 
         return featureValuesOccurrence;
+    }
+
+    private double calculateInformationGain(int attributePosition) {
+        return calculateEntropy(numberOfRecurrenceTarget, numberOfNoRecurrenceTarget) -
+            calculateEntropyOfTargetWithAttribute(attributePosition);
     }
 
     public double calculateEntropy(int firstValue, int secondValue) {
@@ -116,14 +120,14 @@ public class PatientCollection {
         double result = 0;
 
         for (Map.Entry<String, Integer> currentAttributeValueRecurrenceEntry :
-            this.featureValuesOccurrence.get(RECURRENCE_EVENT_INDEX).get(attributePosition).entrySet()) {
+            this.featureValuesOccurrenceNumberList.get(RECURRENCE_EVENT_INDEX).get(attributePosition).entrySet()) {
             String currentAttributeValueName = currentAttributeValueRecurrenceEntry.getKey();
             int currentAttributeValueRecurrenceCounter = currentAttributeValueRecurrenceEntry.getValue();
 
             Integer currentAttributeValueNoRecurrenceCounter;
-            if (this.featureValuesOccurrence.get(NO_RECURRENCE_EVENT_INDEX)
+            if (this.featureValuesOccurrenceNumberList.get(NO_RECURRENCE_EVENT_INDEX)
                 .get(attributePosition) != null) {
-                currentAttributeValueNoRecurrenceCounter = this.featureValuesOccurrence.get(NO_RECURRENCE_EVENT_INDEX)
+                currentAttributeValueNoRecurrenceCounter = this.featureValuesOccurrenceNumberList.get(NO_RECURRENCE_EVENT_INDEX)
                     .get(attributePosition).get(currentAttributeValueName);
             } else {
                 currentAttributeValueNoRecurrenceCounter = 0;
@@ -141,9 +145,15 @@ public class PatientCollection {
         return result;
     }
 
-    private double calculateInformationGain(int attributePosition) {
-        return calculateEntropy(numberOfRecurrenceTarget, numberOfNoRecurrenceTarget) -
-            calculateEntropyOfTargetWithAttribute(attributePosition);
+    public boolean isRecurrenceTargetPrevalence(TreeNode treeNode) {
+        if (numberOfRecurrenceTarget == numberOfNoRecurrenceTarget) {
+            if (treeNode.getParentTreeNode() != null) {
+                return treeNode.getParentTreeNode().isRecurrenceEvent();
+            }
+            return false;
+        }
+
+        return numberOfRecurrenceTarget > numberOfNoRecurrenceTarget;
     }
 
     public int findBestDecisionAttribute(Set<Integer> visitedFeaturePositionsSet) {
@@ -164,6 +174,7 @@ public class PatientCollection {
 
     public PatientCollection findPatientsWithGivenAttributeValue(int attributePosition, String attributeValue) {
         List<Patient> foundPatientsList = new ArrayList<>();
+
         for (Patient currentPatient : this.patientCollectionList) {
             if (currentPatient.getNumberedFeature(attributePosition).equalsIgnoreCase(attributeValue)) {
                 foundPatientsList.add(currentPatient);
@@ -172,33 +183,6 @@ public class PatientCollection {
 
         return new PatientCollection(foundPatientsList);
     }
-
-//    public String findRecurrenceTargetPrevalence(TreeNode treeNode) {
-//        if (numberOfRecurrenceTarget > numberOfNoRecurrenceTarget) {
-//            return RECURRENCE_EVENT_STRING;
-//        } else if (numberOfNoRecurrenceTarget > numberOfRecurrenceTarget) {
-//            return NO_RECURRENCE_EVENT_STRING;
-//        }
-//
-//        TreeNode parentTreeNode = treeNode.getParentTreeNode();
-//        if (parentTreeNode.isRecurrenceEvent()) {
-//            return RECURRENCE_EVENT_STRING;
-//        }
-//        return NO_RECURRENCE_EVENT_STRING;
-//    }
-
-    public boolean findRecurrenceTargetPrevalence(TreeNode treeNode) {
-
-        if (numberOfRecurrenceTarget == numberOfNoRecurrenceTarget) {
-            if (treeNode.getParentTreeNode() != null) {
-                return treeNode.getParentTreeNode().isRecurrenceEvent();
-            }
-            return false;
-        }
-
-        return numberOfRecurrenceTarget > numberOfNoRecurrenceTarget;
-    }
-
 
     public int getNumberOfNoRecurrenceTarget() {
         return numberOfNoRecurrenceTarget;
@@ -212,7 +196,7 @@ public class PatientCollection {
         return numberOfPatients;
     }
 
-    public List<Set<String>> getPatientAttributeValuesList() {
-        return patientAttributeValuesList;
+    public List<Set<String>> getPatientPossibleAttributeValuesList() {
+        return patientPossibleAttributeValuesList;
     }
 }

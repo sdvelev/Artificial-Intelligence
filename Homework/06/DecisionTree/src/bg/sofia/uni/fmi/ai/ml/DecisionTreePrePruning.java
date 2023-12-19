@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 public class DecisionTreePrePruning extends DecisionTree {
-
-    private final static int K = 50;
+    private final static int MAX_NUMBER_OF_VISITED_FEATURES_BEFORE_PRUNING = 9;
+    private final static int K_MINIMUM_NUMBER_OF_PATIENTS_IN_TRAIN_SET = 20;
 
     public DecisionTreePrePruning(PatientCollection patientCollection, List<Set<String>> patientAttributeValuesList) {
         constructAttributeTreeNode(patientCollection, null, patientAttributeValuesList);
@@ -16,13 +16,15 @@ public class DecisionTreePrePruning extends DecisionTree {
     public void constructAttributeValueTreeNode(int attributePosition, String attributeValue, TreeNode parentTreeNode,
                                                 PatientCollection patientCollection,
                                                 List<Set<String>> patientAttributeValuesList) {
-        if (isEntropyZero(patientCollection) || parentTreeNode.getVisitedFeaturePositionsSet().size() == 9
-            ||patientCollection.getNumberOfPatients() < K) {
+        // PrePruning process - turning early into leaf node
+        if (isEntropyZero(patientCollection) ||
+            parentTreeNode.getVisitedFeaturePositionsSet().size() == MAX_NUMBER_OF_VISITED_FEATURES_BEFORE_PRUNING ||
+            patientCollection.getNumberOfPatients() < K_MINIMUM_NUMBER_OF_PATIENTS_IN_TRAIN_SET) {
             TreeNode leafTreeNode = new TreeNode();
             leafTreeNode.setRepresentedFeatureValue(attributeValue);
             leafTreeNode.setTargetLeafNode(true);
             leafTreeNode.setParentTreeNode(parentTreeNode);
-            leafTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(leafTreeNode));
+            leafTreeNode.setRecurrenceEvent(patientCollection.isRecurrenceTargetPrevalence(leafTreeNode));
             parentTreeNode.getChildrenTreeNodesList().add(leafTreeNode);
             return;
         }
@@ -32,10 +34,12 @@ public class DecisionTreePrePruning extends DecisionTree {
         childTreeNode.setRepresentedFeatureValue(attributeValue);
         childTreeNode.setVisitedFeaturePositionsSet(new HashSet<>(parentTreeNode.getVisitedFeaturePositionsSet()));
         childTreeNode.setParentTreeNode(parentTreeNode);
-        childTreeNode.setRecurrenceEvent(patientCollection.findRecurrenceTargetPrevalence(childTreeNode));
+        childTreeNode.setRecurrenceEvent(patientCollection.isRecurrenceTargetPrevalence(childTreeNode));
         parentTreeNode.getChildrenTreeNodesList().add(childTreeNode);
+
         PatientCollection updatedPatientCollection = patientCollection
             .findPatientsWithGivenAttributeValue(attributePosition, attributeValue);
+
         constructAttributeTreeNode(updatedPatientCollection, childTreeNode, patientAttributeValuesList);
     }
 }

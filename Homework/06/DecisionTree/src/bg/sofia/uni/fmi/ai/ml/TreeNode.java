@@ -1,7 +1,5 @@
 package bg.sofia.uni.fmi.ai.ml;
 
-import com.sun.source.tree.Tree;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,7 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 
 public class TreeNode {
-
     private final static int UNKNOWN = -1;
     private final static String EMPTY_STRING = "";
 
@@ -110,7 +107,6 @@ public class TreeNode {
     public void setNumberOfErrorsForPostPruning(int numberOfErrorsForPostPruning) {
         this.numberOfErrorsForPostPruning = numberOfErrorsForPostPruning;
     }
-
 
     @Override
     public boolean equals(Object o) {

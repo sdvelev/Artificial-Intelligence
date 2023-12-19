@@ -1,7 +1,5 @@
 package bg.sofia.uni.fmi.ai.ml;
 
-import java.lang.reflect.ParameterizedType;
-
 public record Patient(String recurrenceEvents,
                       String age,
                       String menopause,
