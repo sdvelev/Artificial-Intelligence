@@ -65,8 +65,7 @@ public class DecisionTreePostPruning extends DecisionTree {
         childTreeNode.setParentTreeNode(parentTreeNode);
         childTreeNode.setVisitedFeaturePositionsSet(new HashSet<>(parentTreeNode.getVisitedFeaturePositionsSet()));
 
-        // TODO Missing in original
-        // childTreeNode.setRecurrenceEvent(patientCollection.isRecurrenceTargetPrevalence(childTreeNode));
+        childTreeNode.setRecurrenceEvent(patientCollection.isRecurrenceTargetPrevalence(childTreeNode));
 
         parentTreeNode.getChildrenTreeNodesList().add(childTreeNode);
 

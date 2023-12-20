@@ -16,7 +16,7 @@ public class DecisionTreePrePruning extends DecisionTree {
     public void constructAttributeValueTreeNode(int attributePosition, String attributeValue, TreeNode parentTreeNode,
                                                 PatientCollection patientCollection,
                                                 List<Set<String>> patientAttributeValuesList) {
-        // PrePruning process - turning early into leaf node
+        // PrePruning process - turning into leaf node
         if (isEntropyZero(patientCollection) ||
             parentTreeNode.getVisitedFeaturePositionsSet().size() == MAX_NUMBER_OF_VISITED_FEATURES_BEFORE_PRUNING ||
             patientCollection.getNumberOfPatients() < K_MINIMUM_NUMBER_OF_PATIENTS_IN_TRAIN_SET) {
