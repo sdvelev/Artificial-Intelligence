@@ -4,6 +4,7 @@ from collections import defaultdict
 from matplotlib import pyplot
 
 
+DATA_FOLDER_NAME = './data/'
 MAX_ITERATIONS_BEFORE_STOP = 300
 
 def read_file(filename):
@@ -127,9 +128,8 @@ def visualize_clusters_diagram(clusters, centroids, is_enhanced):
 
 
 if __name__ == '__main__':
-    file_name = input('Enter file name: ')
-    k_coefficient = int(input('Enter number of clusters (k): '))
-    points_dictionary = read_file('./data/' + file_name)
+    file_name = input('Enter the name of the file: ')
+    k_coefficient = int(input('Enter the number of clusters (k): '))
+    points_dictionary = read_file(DATA_FOLDER_NAME + file_name)
 
     kmeans_algorithm(points_dictionary, k_coefficient)
-    # kmeans_algorithm(points_dictionary, k_coefficient)
