@@ -13,8 +13,16 @@ public class Solution {
             List.of(1, 0),
             List.of(1, 1));
 
+        List<List<Double>> inputLayerDouble = List.of(
+            List.of(0., 0.),
+            List.of(0., 1.),
+            List.of(1., 0.),
+            List.of(1., 1.));
+
         List<Integer> outputLayerLogicalAnd = List.of(0, 0, 0, 1);
         List<Integer> outputLayerLogicalOr = List.of(0, 1, 1, 1);
+        List<Double> outputLayerLogicalXor = List.of(0., 1., 1., 0.);
+
 
         SingleLayerPerceptron singleLayerPerceptronLogicalAnd = new SingleLayerPerceptron(inputLayer, outputLayerLogicalAnd,
             BIAS_VALUE);
@@ -31,10 +39,14 @@ public class Solution {
             BIAS_VALUE);
         singleLayerPerceptronLogicalOr.trainPerceptron();
 
-
         for (int i = 0; i < inputLayer.size(); i++) {
             System.out.println("The predicted result for values " + inputLayer.get(i).get(0) + " || " + inputLayer.get(i).get(1)
                 + " is: " + singleLayerPerceptronLogicalOr.getPredictedValue(inputLayer.get(i)));
         }
+
+        System.out.println();
+
+        MultiLayerNetwork multiLayerNetwork = new MultiLayerNetwork(inputLayerDouble, outputLayerLogicalXor, 2, 2, 1);
+        multiLayerNetwork.trainNetwork();
     }
 }
