@@ -1,18 +1,16 @@
 package bg.sofia.uni.fmi.ai.ml;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class SingleLayerPerceptron {
-    private final static double INITIAL_RANDOM_WEIGHT = 0.5;
-    private final static int MAX_EPOCHS = 10000;
-    private final static double LEARNING_RATE = 0.0001;
-    private final static double THRESHOLD_VALUE = 1;
+    private final static double INITIAL_RANDOM_WEIGHT = 0.01;//0.5;
+    private final static int MAX_EPOCHS = 1000;//10000;
+    private final static double LEARNING_RATE = 0.01;//0.0001;
+    private final static double CRITICAL_VALUE = 0.5;//1;
 
     private final static Random RANDOM_GENERATOR = new Random();
-    private static final DecimalFormat DECIMAL_FORMAT_ROUND_TWELVE = new DecimalFormat("0.000000000000");
 
 
     private List<List<Integer>> inputLayer;
@@ -40,7 +38,7 @@ public class SingleLayerPerceptron {
             int numberOfElementsInRow = inputLayer.get(0).size();
 
             for (int i = 0; i < numberOfElementsInRow; i++) {
-                weightsList.add(-INITIAL_RANDOM_WEIGHT + (2 * INITIAL_RANDOM_WEIGHT)* RANDOM_GENERATOR.nextDouble());
+                weightsList.add(-INITIAL_RANDOM_WEIGHT + RANDOM_GENERATOR.nextDouble());
             }
         }
     }
@@ -75,7 +73,7 @@ public class SingleLayerPerceptron {
 
     public int getPredictedValue(List<Integer> inputData) {
         double calculatedActivationFunction = getActivationFunction(inputData);
-        return calculatedActivationFunction > THRESHOLD_VALUE ? 1 : 0;
+        return calculatedActivationFunction > CRITICAL_VALUE ? 1 : 0;
     }
 
     private double getActivationFunction(List<Integer> inputData) {

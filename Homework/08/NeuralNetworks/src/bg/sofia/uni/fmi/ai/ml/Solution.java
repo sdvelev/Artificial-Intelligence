@@ -5,7 +5,6 @@ import java.util.List;
 public class Solution {
     private final static double BIAS_VALUE = 0.5;
 
-
     public static void main(String[] args) {
         List<List<Integer>> inputLayer = List.of(
             List.of(0, 0),
@@ -22,7 +21,6 @@ public class Solution {
         List<Integer> outputLayerLogicalAnd = List.of(0, 0, 0, 1);
         List<Integer> outputLayerLogicalOr = List.of(0, 1, 1, 1);
         List<Double> outputLayerLogicalXor = List.of(0., 1., 1., 0.);
-
 
         SingleLayerPerceptron singleLayerPerceptronLogicalAnd = new SingleLayerPerceptron(inputLayer, outputLayerLogicalAnd,
             BIAS_VALUE);
@@ -47,6 +45,12 @@ public class Solution {
         System.out.println();
 
         MultiLayerNetwork multiLayerNetwork = new MultiLayerNetwork(inputLayerDouble, outputLayerLogicalXor, 2, 2, 1);
-        multiLayerNetwork.trainNetwork();
+        List<Double> predictedValues =  multiLayerNetwork.trainNetwork();
+
+        for (int i = 0; i < predictedValues.size(); i++) {
+            System.out.println("The predicted result for values " +
+                (inputLayerDouble.get(i).get(0)).intValue() + " ⊕ " + inputLayerDouble.get(i).get(1).intValue()
+                + " is: " + predictedValues.get (i));
+        }
     }
 }

@@ -26,6 +26,22 @@ public class MultiLayerNetwork {
     private List<Double> outputValues;
     private List<Double> predictedValues;
 
+    public MultiLayerNetwork() {
+        this.inputLayerList = new ArrayList<>();
+        this.hiddenLayerList = new ArrayList<>();
+        this.outputLayerList = new ArrayList<>();
+        this.biasNeuron = new Neuron();
+        biasNeuron.setActivationFunctionValue(1);
+
+        this.numberOfNeuronsInInputLayer = 0;
+        this.numberOfNeuronsInHiddenLayer = 0;
+        this.numberOfNeuronsInOutputLayer = 0;
+
+        this.inputValues = new ArrayList<>();
+        this.outputValues = new ArrayList<>();
+        this.predictedValues = new ArrayList<>();
+    }
+
     public MultiLayerNetwork(List<List<Double>> inputValues, List<Double> outputValues,
                              int numberOfNeuronsInInputLayer, int numberOfNeuronsInHiddenLayer,
                              int numberOfNeuronsInOutputLayer) {
@@ -47,7 +63,7 @@ public class MultiLayerNetwork {
         applyRandomWeightsInitialization();
     }
 
-    public void trainNetwork() {
+    public List<Double> trainNetwork() {
         for (int i = 0; i < MAX_EPOCHS; i++) {
             double totalError = 0;
             for (int j = 0; j < outputValues.size(); j++) {
@@ -73,57 +89,18 @@ public class MultiLayerNetwork {
             }
 
             if (stopCriteria(totalError)) {
-                for (int j = 0; j < predictedValues.size(); j++) {
-                    System.out.println("The predicted result for values " +
-                        (inputValues.get(j).get(0)).intValue() + " ⊕ " + inputValues.get(j).get(1).intValue()
-                        + " is: " + predictedValues.get (j));
-                }
-                break;
+                return predictedValues;
             } else {
                 predictedValues.clear();
             }
         }
+
+        return new ArrayList<>();
     }
 
     private boolean stopCriteria(double totalError) {
         return totalError <= STOP_CRITERIA_MIN_ERROR;
     }
-
-//    private void applyBackpropagation(double expectedOutput) {
-//        for (Neuron neuron : outputLayerList) {
-//            List<Connection> connections = neuron.getInputConnectionsList();
-//            for (Connection connection : connections) {
-//                double ok = neuron.getActivationFunctionValue();
-//                double tk = expectedOutput;
-//                double deltak = ok * (1 - ok) * (tk - ok);
-//                double x = connection.getStartNeuron().getActivationFunctionValue();
-//                double weight = connection.getWeight() + LEARNING_RATE * deltak * x;
-//                connection.setWeight(weight);
-//            }
-//        }
-//
-//        int k = 0;
-//        for (Neuron neuron : hiddenLayerList) {
-//            List<Connection> connections = neuron.getInputConnectionsList();
-//            for (Connection connection : connections) {
-//                double oh = neuron.getActivationFunctionValue();
-//                double sum = 0;
-//                for (Neuron outputNeuron : outputLayerList) {
-//                    double ok = outputNeuron.getActivationFunctionValue();
-//                    double tk = expectedOutput;
-//                    double deltak = ok * (1 - ok) * (tk - ok);
-//                    double wkh = outputNeuron.getInputConnectionsList().get(k).getWeight();
-//                    sum += deltak * wkh;
-//                }
-//                double deltah = oh * (1 - oh) * sum;
-//                double x = connection.getStartNeuron().getActivationFunctionValue();
-//                double weight = connection.getWeight() + LEARNING_RATE * deltah * x;
-//                connection.setWeight(weight);
-//            }
-//
-//            k++;
-//        }
-//    }
 
     private void applyBackpropagation(double expectedOutput) {
         updateOutputLayerWeights(expectedOutput);
