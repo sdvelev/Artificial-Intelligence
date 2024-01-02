@@ -32,6 +32,7 @@ def kmeans_algorithm(points_dictionary, k, is_enhanced=None):
     iterations = 0
     previous_centroids = []
 
+    current_clusters = defaultdict()
     while not do_stop_iterations(centroids_initial_coordinates, previous_centroids, iterations):
         previous_centroids = centroids_initial_coordinates.copy()
         current_clusters = assign_points_to_clusters(points_dictionary, centroids_initial_coordinates)
@@ -72,12 +73,10 @@ def recalculate_centroids_coordinates(clusters):
 
     return new_centroids_coordinates_list
 
-
 def do_stop_iterations(current_chosen_centroids, previous_centroids, iterations):
     if iterations > MAX_ITERATIONS_BEFORE_STOP:
         return True
     return current_chosen_centroids == previous_centroids
-
 
 def init_random_initial_coordinates(points_dictionary, k):
     centroids = random.sample(points_dictionary, k)
@@ -95,7 +94,6 @@ def init_kmeans_plus_plus_coordinates(points_dictionary, k):
         chosen_index = random.choices(range(len(points_dictionary)), probabilities)[0]
         chosen_centroids.append(points_dictionary[chosen_index])
     return chosen_centroids
-
 
 def euclidean_distance(first_point, second_point):
     total_distance = 0
@@ -115,8 +113,6 @@ def visualize_clusters_diagram(clusters, centroids, is_enhanced):
         pyplot.scatter(x_coordinate, y_coordinate, color=current_color, label=f'Cluster #{label}')
 
     for current_centroid_index, current_centroid_coordinates in enumerate(centroids):
-        # current_color = colormap(current_centroid_index / len(clusters))
-
         pyplot.scatter(current_centroid_coordinates[0], current_centroid_coordinates[1], color='red', marker='^', linewidths=1, label=f'Centroid #{current_centroid_index + 1}')
 
     if (is_enhanced):
@@ -125,7 +121,6 @@ def visualize_clusters_diagram(clusters, centroids, is_enhanced):
         pyplot.title('kMeans', fontsize=26)
 
     pyplot.show()
-
 
 if __name__ == '__main__':
     file_name = input('Enter the name of the file: ')
